@@ -4,6 +4,8 @@ Fridge2Plate is an iOS application that helps users find recipes based on the in
 
 The main idea of the application is simple: the user specifies the ingredients available in their fridge, and Fridge2Plate checks the recipe collection and displays the recipes that can be prepared using those ingredients.
 
+Created By IP-44 Klimenko Bogdana, IP-41 Podkur Nadia, IP-44 Naumenko Evgeniy
+
 ## Domain
 
 The application works with ingredients and recipes.
