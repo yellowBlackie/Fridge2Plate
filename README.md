@@ -6,6 +6,83 @@ The main idea of the application is simple: the user specifies the ingredients a
 
 Created By IP-44 Klimenko Bogdana, IP-41 Podkur Nadiia, IP-44 Naumenko Evgeniy
 
+## Practical Work 1 — Team Contributions
+
+Practical Work 1 was completed collaboratively by three team members. Responsibilities were divided between domain modeling, business logic, version control, UI implementation, and testing.
+
+### Bohdana — Domain Models
+
+Bohdana was responsible for the domain model and the main entities of the application.
+
+Implemented and worked on:
+
+- `Ingredient` model;
+- `Recipe` model;
+- `Category` enum;
+- `Displayable` protocol;
+- Optional calorie values and their safe handling;
+- basic structure of the Fridge2Plate domain model.
+
+Main files:
+
+- `Fridge2Plate/Ingredient.swift`
+- `Fridge2Plate/Recipe.swift`
+- `Fridge2Plate/Category.swift`
+- `Fridge2Plate/Displayable.swift`
+
+### Yevhenii — Business Logic, Git and Documentation
+
+Yevhenii was responsible for the main recipe-search logic, repository organization, and project documentation.
+
+Implemented and worked on:
+
+- `FridgeManager`;
+- adding and storing recipes;
+- recipe filtering based on available ingredients;
+- collection processing using `map`, `filter`, and `allSatisfy`;
+- Git and GitHub repository configuration;
+- feature branches and Pull Requests;
+- `.gitignore`;
+- project documentation in `README.md`;
+- final `practical-1` tag.
+
+Main file:
+
+- `Fridge2Plate/FridgeManager.swift`
+
+### Nadia — SwiftUI, Integration and Testing
+
+Nadia was responsible for the demonstration scenario, SwiftUI integration, and testing the application in Xcode.
+
+Implemented and worked on:
+
+- demo scenario for Fridge2Plate;
+- integration of the domain logic with `ContentView`;
+- minimal SwiftUI interface;
+- displaying available fridge ingredients;
+- displaying recipes that can be prepared;
+- Xcode project build and run verification;
+- testing the application using iOS Simulator.
+
+Main files:
+
+- `Fridge2Plate/ContentView.swift`
+- `Fridge2Plate/Fridge2PlateApp.swift`
+
+### Team Result
+
+As a result of the shared work, Practical Work 1 includes:
+
+- configured Xcode project;
+- Git and GitHub workflow;
+- domain models;
+- recipe-search business logic;
+- Swift language concepts required by the assignment;
+- completed Fridge2Plate demo scenario;
+- minimal SwiftUI interface;
+- project documentation;
+- final version marked with the `practical-1` Git tag.
+
 ## Domain
 
 The application works with ingredients and recipes.
