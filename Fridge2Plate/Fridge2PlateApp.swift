@@ -53,8 +53,12 @@ struct Fridge2PlateApp: App {
             ]
         )
 
-        self.viewModel = FridgeViewModel(
+        let recipeService = RecipeService(
             fridgeManager: fridgeManager
+        )
+
+        self.viewModel = FridgeViewModel(
+            recipeService: recipeService
         )
     }
 

@@ -1,27 +1,34 @@
 import Foundation
 
-class FridgeManager {
-    private var recipes: [Recipe]
+final class FridgeManager {
 
-    init(recipes: [Recipe] = []) {
+    private var recipes: [Recipe]
+    private var searchStrategy: RecipeSearchStrategy
+
+    init(
+        recipes: [Recipe] = [],
+        searchStrategy: RecipeSearchStrategy = ExactMatchStrategy()
+    ) {
         self.recipes = recipes
+        self.searchStrategy = searchStrategy
     }
 
     func addRecipe(_ recipe: Recipe) {
         recipes.append(recipe)
     }
 
-    func findRecipes(with availableIngredients: [String]) -> [Recipe] {
-        let normalizedIngredients = availableIngredients.map {
-            $0.lowercased()
-        }
+    func setSearchStrategy(
+        _ strategy: RecipeSearchStrategy
+    ) {
+        searchStrategy = strategy
+    }
 
-        return recipes.filter { recipe in
-            recipe.ingredients.allSatisfy { ingredient in
-                normalizedIngredients.contains(
-                    ingredient.name.lowercased()
-                )
-            }
-        }
+    func findRecipes(
+        with availableIngredients: [String]
+    ) -> [Recipe] {
+        searchStrategy.findRecipes(
+            in: recipes,
+            with: availableIngredients
+        )
     }
 }
