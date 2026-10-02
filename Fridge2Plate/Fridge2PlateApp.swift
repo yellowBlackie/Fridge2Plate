@@ -30,17 +30,21 @@ struct Fridge2PlateApp: App {
             calories: 165
         )
 
-        let omelette = Recipe(
-            name: "Omelette",
-            ingredients: [eggs, cheese, tomato],
-            baseServings: 1
-        )
+        let omelette = RecipeBuilder()
+            .setName("Omelette")
+            .addIngredient(eggs)
+            .addIngredient(cheese)
+            .addIngredient(tomato)
+            .setBaseServings(1)
+            .build()
 
-        let chickenOmelette = Recipe(
-            name: "Chicken Omelette",
-            ingredients: [eggs, cheese, chicken],
-            baseServings: 1
-        )
+        let chickenOmelette = RecipeBuilder()
+            .setName("Chicken Omelette")
+            .addIngredient(eggs)
+            .addIngredient(cheese)
+            .addIngredient(chicken)
+            .setBaseServings(1)
+            .build()
 
         let fridgeManager = FridgeManager(
             recipes: [
