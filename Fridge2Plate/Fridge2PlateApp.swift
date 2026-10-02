@@ -38,14 +38,22 @@ struct Fridge2PlateApp: App {
             .setBaseServings(1)
             .build()
 
-        let chickenOmelette = RecipeBuilder()
-            .setName("Chicken Omelette")
-            .addIngredient(eggs)
-            .addIngredient(cheese)
-            .addIngredient(chicken)
-            .setBaseServings(1)
-            .build()
+        let legacyChickenOmelette = LegacyRecipe(
+            title: "Chicken Omelette",
+            items: [
+                eggs,
+                cheese,
+                chicken
+            ],
+            portions: 1
+        )
 
+        let recipeAdapter = RecipeAdapter()
+
+        let chickenOmelette = recipeAdapter.adapt(
+            legacyChickenOmelette
+        )
+        
         let fridgeManager = FridgeManager(
             recipes: [
                 omelette,
