@@ -6,10 +6,10 @@ final class FridgeViewModel: ObservableObject {
     @Published var availableIngredients: [String]
     @Published var availableRecipes: [Recipe] = []
 
-    private let fridgeManager: FridgeManager
+    private let recipeService: RecipeServiceProtocol
 
-    init(fridgeManager: FridgeManager) {
-        self.fridgeManager = fridgeManager
+    init(recipeService: RecipeServiceProtocol) {
+        self.recipeService = recipeService
 
         self.availableIngredients = [
             "Eggs",
@@ -21,7 +21,7 @@ final class FridgeViewModel: ObservableObject {
     }
 
     func findAvailableRecipes() {
-        availableRecipes = fridgeManager.findRecipes(
+        availableRecipes = recipeService.findRecipes(
             with: availableIngredients
         )
     }
