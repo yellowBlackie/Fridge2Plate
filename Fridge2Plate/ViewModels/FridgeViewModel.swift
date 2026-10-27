@@ -1,3 +1,4 @@
+
 import Foundation
 import Combine
 
@@ -25,4 +26,50 @@ final class FridgeViewModel: ObservableObject {
             with: availableIngredients
         )
     }
+
+    @discardableResult
+    func addIngredient(_ name: String) -> Bool {
+
+        let trimmedName = name.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        )
+
+        guard !trimmedName.isEmpty else {
+            return false
+        }
+
+        let alreadyExists = availableIngredients.contains {
+            $0.lowercased() == trimmedName.lowercased()
+        }
+
+        guard !alreadyExists else {
+            return false
+        }
+
+        availableIngredients.append(trimmedName)
+
+        findAvailableRecipes()
+
+        return true
+    }
+
+    
+    @discardableResult
+    func removeIngredient(_ name: String) -> Bool {
+
+        guard let index = availableIngredients.firstIndex(
+            where: {
+                $0.caseInsensitiveCompare(name) == .orderedSame
+            }
+        ) else {
+            return false
+        }
+
+        availableIngredients.remove(at: index)
+
+        findAvailableRecipes()
+
+        return true
+    }
+
 }
