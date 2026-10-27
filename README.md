@@ -1,20 +1,32 @@
+
 # Fridge2Plate
 
-**Fridge2Plate** is an iOS application that helps users find recipes based on the ingredients they currently have available.
+**Fridge2Plate** is an iOS application that helps users find recipes based on the ingredients they already have at home.
 
-The main idea is simple: the user specifies the ingredients available in the fridge, and Fridge2Plate analyzes the recipe collection and displays recipes that can be prepared using those ingredients.
+The application allows users to manage ingredients in their fridge, discover available recipes, view recipe details, and update their ingredients through a simple SwiftUI interface.
 
-The project was developed as part of practical work on **Swift, iOS development, software architecture, design patterns, SOLID principles, Git, and GitHub collaboration**.
-
----
+The project was developed during three practical works covering Swift fundamentals, software architecture, design patterns, SOLID principles, navigation, state management, and animations.
 
 ## Team
 
-| Student | Group | Main Responsibilities |
+| Student | Group | Responsibilities |
 | --- | --- | --- |
-| Bohdana Klimenko | IP-44 | Domain models, MVVM architecture, Builder pattern |
-| Nadiia Podkur | IP-41 | SwiftUI, Xcode integration, testing, Adapter pattern |
-| Yevhenii Naumenko | IP-44 | Business logic, services, dependency injection, Strategy pattern, Git and documentation |
+| Bohdana Klimenko | IP-44 | Domain models, MVVM architecture, Builder, navigation Router |
+| Nadiia Podkur | IP-41 | SwiftUI interface, Adapter, animations, Xcode integration and testing |
+| Yevhenii Naumenko | IP-44 | Business logic, services, Strategy, dependency injection, ingredient state management, Git and documentation |
+
+## Technologies
+
+- Swift
+- SwiftUI
+- Combine
+- Xcode
+- iOS Simulator
+- MVVM architecture
+- Router-based navigation
+- Design patterns: Builder, Adapter, Strategy
+- SOLID principles
+- Git and GitHub
 
 ---
 
@@ -22,42 +34,31 @@ The project was developed as part of practical work on **Swift, iOS development,
 
 ## Domain
 
-The application works with **ingredients** and **recipes**.
+Fridge2Plate works with two main domain entities: **ingredients** and **recipes**.
 
-An ingredient contains information such as:
+An ingredient contains a name, category, and optional calorie information.
 
-- name;
-- category;
-- optional calorie value.
+A recipe contains a name, a collection of required ingredients, the number of servings, and methods for calculating calories.
 
-A recipe contains:
-
-- recipe name;
-- required ingredients;
-- number of servings;
-- calorie-related functionality.
-
-The application compares the ingredients available to the user with the ingredients required by recipes and determines which recipes can be prepared.
-
----
+The application compares the ingredients available to the user with those required by each recipe.
 
 ## Target User
 
-The target user is a person who wants to quickly decide what to cook using products that are already available at home.
+The target user is a person who wants to decide what to cook using products already available at home.
 
-Fridge2Plate helps the user:
+Fridge2Plate allows users to:
 
-- view available ingredients;
-- find recipes that can be prepared;
-- avoid recipes requiring unavailable products;
-- view basic recipe information;
-- support different recipe-search strategies.
+- View ingredients currently available in the fridge.
+- Add new ingredients.
+- Remove existing ingredients.
+- Find recipes based on available products.
+- Open recipe details.
+- View ingredient lists and calorie information.
+- Navigate between screens without losing the current session state.
 
----
+## Main User Scenario
 
-## Main Scenario
-
-For the current demo, the fridge contains:
+Initially, the fridge contains:
 
 ```text
 Eggs
@@ -65,27 +66,25 @@ Cheese
 Tomato
 ```
 
-The application contains recipes such as:
+The application contains two demo recipes:
+
+| Recipe | Required Ingredients |
+| --- | --- |
+| Omelette | Eggs, Cheese, Tomato |
+| Chicken Omelette | Eggs, Cheese, Chicken |
+
+With the default `ExactMatchStrategy`, only **Omelette** is available.
+
+After the user adds `Chicken`, the available recipes are:
 
 ```text
 Omelette
-- Eggs
-- Cheese
-- Tomato
-
 Chicken Omelette
-- Eggs
-- Cheese
-- Chicken
 ```
 
-With the default exact-match search strategy, the result is:
+If Chicken is removed, Chicken Omelette disappears from the available recipe list.
 
-```text
-Omelette
-```
-
-`Chicken Omelette` is not displayed because `Chicken` is not currently available.
+This scenario demonstrates ingredient management, recipe filtering, state updates, and multi-screen navigation.
 
 ---
 
@@ -93,201 +92,164 @@ Omelette
 
 ## Goal
 
-The goal of Practical Work 1 was to create the initial iOS project, configure Git/GitHub, implement the domain model using basic Swift concepts, and demonstrate one complete application scenario.
+The goal of Practical Work 1 was to create an initial iOS application, configure Git and GitHub, implement basic Swift concepts, and demonstrate a complete domain scenario.
 
----
+## Implemented Functionality
 
-## What Was Implemented
+During Practical Work 1, the team implemented:
 
-Practical Work 1 introduced the foundation of Fridge2Plate:
+- Xcode project configuration.
+- Git repository and `.gitignore`.
+- Domain models.
+- Ingredient categories.
+- Recipe storage.
+- Recipe filtering.
+- Optional calorie values.
+- Collection processing.
+- Minimal SwiftUI interface.
+- A working recipe-search demonstration.
+- Xcode and iOS Simulator verification.
 
-- Xcode project configuration;
-- Git and GitHub repository;
-- `.gitignore`;
-- domain models;
-- recipe-search business logic;
-- Swift structures and classes;
-- protocol and enum;
-- Optional values and safe unwrapping;
-- collections and collection processing;
-- conditions;
-- minimal SwiftUI interface;
-- complete demo scenario;
-- Xcode build and iOS Simulator testing.
-
----
-
-## Main Domain Entities
+## Domain Models
 
 ### Ingredient
 
 `Ingredient` represents a food product.
 
-It contains:
+Properties:
 
-- `name` — ingredient name;
-- `category` — ingredient category;
-- `calories` — optional calorie value.
+- `name: String`
+- `category: Category`
+- `calories: Double?`
 
-Current implementation:
+File:
 
-```text
-Fridge2Plate/Models/Ingredient.swift
-```
+`Fridge2Plate/Models/Ingredient.swift`
 
 ### Recipe
 
-`Recipe` represents a recipe that can be prepared by the user.
+`Recipe` represents a recipe.
 
-It contains:
+It stores:
 
-- recipe name;
-- collection of required ingredients;
-- number of servings;
-- calorie-related methods.
+- Recipe name.
+- Required ingredients.
+- Base servings.
 
-Current implementation:
+It also provides methods for calculating total calories and calories for a selected number of servings.
 
-```text
-Fridge2Plate/Models/Recipe.swift
-```
+File:
+
+`Fridge2Plate/Models/Recipe.swift`
 
 ### Category
 
-`Category` is an enum that represents ingredient categories.
+`Category` is an enum representing ingredient categories.
 
-```text
-Fridge2Plate/Models/Category.swift
-```
+File:
+
+`Fridge2Plate/Models/Category.swift`
 
 ### Displayable
 
 `Displayable` is a protocol defining a common requirement for objects that expose a displayable name.
 
-```text
-Fridge2Plate/Models/Displayable.swift
-```
+File:
 
----
+`Fridge2Plate/Models/Displayable.swift`
 
-## Swift Concepts Used
+## Swift Concepts
 
 | Requirement | Implementation |
 | --- | --- |
-| `struct` | `Ingredient`, `Recipe` |
-| `class` | `FridgeManager` |
-| `protocol` | `Displayable` |
-| `enum` | `Category` |
-| `let` and `var` | Models, services and demo data |
-| Properties | Domain models and services |
-| Methods | Recipe and service methods |
-| Initializers | Models, services, ViewModel and patterns |
-| Collections | `[Ingredient]`, `[Recipe]`, `[String]` |
-| `Optional` | Optional calorie values |
-| Safe Optional handling | `guard let` / `if let` |
-| Conditions | Application and demo logic |
-| Collection processing | `map`, `filter`, `allSatisfy`, `ForEach` |
+| `struct` | Ingredient, Recipe |
+| `class` | FridgeManager |
+| `protocol` | Displayable |
+| `enum` | Category |
+| `let` and `var` | Models, business logic and demo data |
+| Properties and methods | Models and manager |
+| Initializers | Domain models and services |
+| Collections | Arrays of ingredients and recipes |
+| Optional values | Optional calorie information |
+| Safe unwrapping | `guard let`, `if let` |
+| Conditions | `if`, `else`, `guard` |
+| Collection processing | `map`, `filter`, `allSatisfy` |
 
----
+## Original Recipe-Search Scenario
 
-## Optional Handling
-
-The calorie value of an ingredient is optional because calorie information may not always be available.
-
-The application uses safe Optional handling instead of force unwrapping.
-
----
-
-## Practical Work 1 Demo
-
-The first version implemented the following scenario:
+The first version used `FridgeManager` to store recipes and filter them by available ingredients.
 
 ```text
-Available ingredients
-        ↓
-FridgeManager
-        ↓
-Recipe filtering
-        ↓
-Available recipes
-        ↓
-SwiftUI
+Available Ingredients
+         |
+         v
+    FridgeManager
+         |
+         v
+    Recipe Filtering
+         |
+         v
+    Available Recipes
+         |
+         v
+      SwiftUI
 ```
 
-The user sees:
-
-### My Fridge
-
-- Eggs
-- Cheese
-- Tomato
-
-### Recipes You Can Cook
-
-- Omelette
-
-This demonstrated a complete domain scenario from input data to visible UI output.
-
----
-
-## Practical Work 1 — Team Contributions
-
-### Bohdana — Domain Models
-
-Implemented and worked on:
-
-- `Ingredient`;
-- `Recipe`;
-- `Category`;
-- `Displayable`;
-- Optional calorie values;
-- safe Optional handling;
-- basic domain model.
-
-### Yevhenii — Business Logic, Git and Documentation
-
-Implemented and worked on:
-
-- `FridgeManager`;
-- recipe storage;
-- recipe filtering;
-- `map`, `filter`, and `allSatisfy`;
-- Git/GitHub workflow;
-- feature branches and Pull Requests;
-- `.gitignore`;
-- README documentation;
-- `practical-1` tag.
-
-### Nadiia — SwiftUI, Integration and Testing
-
-Implemented and worked on:
-
-- demo scenario;
-- SwiftUI interface;
-- integration of domain logic with `ContentView`;
-- displaying fridge ingredients;
-- displaying available recipes;
-- Xcode build verification;
-- iOS Simulator testing.
-
----
-
-## Practical Work 1 Result
-
-The first practical work resulted in a functional minimal iOS application with:
-
-- configured Xcode project;
-- domain model;
-- business logic;
-- SwiftUI presentation;
-- Git/GitHub workflow;
-- working recipe-search scenario.
-
-The completed version is marked with the Git tag:
+For example:
 
 ```text
-practical-1
+Available ingredients:
+Eggs, Cheese, Tomato
+
+Result:
+Omelette
 ```
+
+Chicken Omelette was not displayed because Chicken was unavailable.
+
+This demonstrated a complete domain scenario using basic Swift functionality.
+
+## Team Contributions — Practical Work 1
+
+### Bohdana
+
+Responsible for:
+
+- Ingredient model.
+- Recipe model.
+- Category enum.
+- Displayable protocol.
+- Optional calorie values.
+- Domain model organization.
+
+### Yevhenii
+
+Responsible for:
+
+- FridgeManager.
+- Recipe storage and filtering.
+- Collection processing.
+- Git/GitHub organization.
+- Feature branches and Pull Requests.
+- README documentation.
+- Practical Work 1 Git tag.
+
+### Nadiia
+
+Responsible for:
+
+- SwiftUI demo interface.
+- Displaying available ingredients.
+- Displaying available recipes.
+- Integration of models and business logic.
+- Xcode build and testing.
+- iOS Simulator demonstration.
+
+## Result
+
+Practical Work 1 established the initial application architecture and a working recipe-search scenario.
+
+**Git tag:** `practical-1`
 
 ---
 
@@ -295,146 +257,112 @@ practical-1
 
 ## Goal
 
-The goal of Practical Work 2 was to improve the initial implementation by introducing a clear architecture, separating responsibilities, applying design patterns, demonstrating SOLID principles, and making dependencies replaceable.
-
-The application was refactored from a simple tightly connected demo into a more modular architecture.
-
----
-
-# Architecture
+The goal of Practical Work 2 was to improve the initial application by introducing a clear architecture, separating responsibilities, implementing design patterns, and demonstrating SOLID principles.
 
 ## Selected Architecture — MVVM
 
 The project uses **MVVM (Model–View–ViewModel)**.
 
-MVVM was selected because:
+MVVM was selected because the application is implemented using SwiftUI and requires separation between the user interface, presentation state, and business logic.
 
-- the application uses SwiftUI;
-- UI state can be managed through `ObservableObject` and `@Published`;
-- presentation logic can be separated from SwiftUI views;
-- business and data-related logic can be tested independently from the UI;
-- the project is not complex enough to justify a heavier architecture such as VIPER.
-
-### MVVM Responsibilities
+### Architecture Components
 
 **Model**
 
-Represents domain data:
+Represents application data:
 
-- `Ingredient`;
-- `Recipe`;
-- `Category`.
+- Ingredient
+- Recipe
+- Category
 
 **View**
 
-Responsible only for displaying data and user-facing UI:
+Displays data and handles user interactions:
 
-- `ContentView`.
+- ContentView
+- FridgeHomeView
+- RecipeListView
+- RecipeDetailView
+- AddIngredientView
 
 **ViewModel**
 
-Stores presentation state and communicates with the service abstraction:
+Manages UI-related state and communicates with the service layer:
 
-- `FridgeViewModel`.
+- FridgeViewModel
 
 **Services**
 
-Provide recipe-related operations and business functionality:
+Provide recipe-related operations:
 
-- `RecipeServiceProtocol`;
-- `RecipeService`;
-- `MockRecipeService`;
-- `FridgeManager`.
+- RecipeServiceProtocol
+- RecipeService
+- MockRecipeService
+- FridgeManager
 
----
-
-## Component Interaction Scheme
+## Component Interaction
 
 ```text
-┌──────────────────────┐
-│     ContentView      │
-│        View          │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│   FridgeViewModel    │
-│      ViewModel       │
-└──────────┬───────────┘
-           │
-           │ depends on abstraction
-           ▼
-┌──────────────────────────┐
-│  RecipeServiceProtocol   │
-└──────────┬───────────────┘
-           │
-           ▼
-┌──────────────────────┐
-│    RecipeService     │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│    FridgeManager     │
-└──────────┬───────────┘
-           │
-           │ delegates algorithm
-           ▼
-┌──────────────────────────┐
-│ RecipeSearchStrategy     │
-└────────────┬─────────────┘
-             │
-       ┌─────┴─────────┐
-       ▼               ▼
- ExactMatch       MissingIngredients
- Strategy             Strategy
+       SwiftUI Views
+             |
+             v
+      FridgeViewModel
+             |
+             v
+    RecipeServiceProtocol
+             |
+             v
+       RecipeService
+             |
+             v
+       FridgeManager
+             |
+             v
+    RecipeSearchStrategy
+             |
+       +-----+------+
+       |            |
+       v            v
+   ExactMatch    MissingIngredients
+    Strategy         Strategy
 ```
 
-The application dependencies are assembled in:
+The application dependencies are created in:
 
-```text
-Fridge2Plate/Fridge2PlateApp.swift
-```
+`Fridge2Plate/Fridge2PlateApp.swift`
 
-This file acts as the **composition root** of the application.
+This file acts as the application's composition root.
+
+## Why MVVM?
+
+MVVM provides several advantages:
+
+- Separates UI from business logic.
+- Improves code organization.
+- Supports observable UI state.
+- Makes ViewModel testing easier.
+- Allows services to be replaced.
+- Fits naturally with SwiftUI.
+
+A limitation is that ViewModels can become too large as the application grows. For the current project, MVVM provides enough separation without unnecessary complexity.
 
 ---
 
-## Architecture Limitations
+## Design Patterns
 
-MVVM works well for the current size of Fridge2Plate, but it also has limitations:
-
-- ViewModels can become too large in bigger applications;
-- additional navigation and coordination abstractions may be required as the project grows;
-- complex applications may require more layers, repositories, coordinators, or use cases.
-
-For the current project, MVVM provides sufficient separation without unnecessary architectural complexity.
-
----
-
-# Design Patterns
-
-Practical Work 2 requires patterns from three categories:
+Three design patterns from different categories were implemented.
 
 | Category | Pattern | Component |
 | --- | --- | --- |
-| Creational | Builder | `RecipeBuilder` |
-| Structural | Adapter | `RecipeAdapter` |
-| Behavioral | Strategy | `RecipeSearchStrategy` |
+| Creational | Builder | RecipeBuilder |
+| Structural | Adapter | RecipeAdapter |
+| Behavioral | Strategy | RecipeSearchStrategy |
 
----
+### 1. Builder — Creational Pattern
 
-## 1. Creational Pattern — Builder
+**Problem:** Creating a recipe can involve multiple properties and ingredients. Direct initialization may become difficult to read.
 
-### Problem
-
-Creating a recipe may require setting multiple values and adding several ingredients.
-
-Direct initialization can become difficult to read as the number of configuration parameters grows.
-
-### Solution
-
-`RecipeBuilder` provides a step-by-step interface for constructing a `Recipe`.
+**Solution:** `RecipeBuilder` constructs a Recipe step by step.
 
 Example:
 
@@ -448,163 +376,109 @@ let omelette = RecipeBuilder()
     .build()
 ```
 
-### Participants
+Participants:
 
-- **Builder:** `RecipeBuilder`
-- **Product:** `Recipe`
-- **Client:** `Fridge2PlateApp`
+- Builder: RecipeBuilder
+- Product: Recipe
+- Client: Fridge2PlateApp
 
-### Purpose
+File:
 
-Builder separates complex object construction from the final `Recipe` representation and provides a readable fluent interface.
+`Fridge2Plate/Patterns/Builder/RecipeBuilder.swift`
 
-Implemented in:
+### 2. Adapter — Structural Pattern
 
-```text
-Fridge2Plate/Patterns/Builder/RecipeBuilder.swift
-```
-
----
-
-## 2. Structural Pattern — Adapter
-
-### Problem
-
-An external or legacy recipe representation may use a structure incompatible with the application's internal `Recipe` model.
+**Problem:** A legacy recipe representation may have a different structure from the internal Recipe model.
 
 For example:
 
 ```text
-LegacyRecipe          Recipe
+LegacyRecipe        Recipe
 
-title          →      name
-items          →      ingredients
-portions       →      baseServings
+title          ->   name
+items          ->   ingredients
+portions       ->   baseServings
 ```
 
-The rest of the application should not need to understand or depend on the legacy representation.
-
-### Solution
-
-`RecipeAdapter` converts `LegacyRecipe` into the internal `Recipe` model.
-
-Conceptually:
+**Solution:** `RecipeAdapter` converts LegacyRecipe into the application's Recipe model.
 
 ```text
 LegacyRecipe
-     │
-     ▼
+     |
+     v
 RecipeAdapter
-     │
-     ▼
-Recipe
+     |
+     v
+   Recipe
 ```
 
-### Participants
+Participants:
 
-- **Adaptee:** `LegacyRecipe`
-- **Adapter:** `RecipeAdapter`
-- **Target representation:** `Recipe`
-- **Client:** application composition in `Fridge2PlateApp`
+- Adaptee: LegacyRecipe
+- Adapter: RecipeAdapter
+- Target representation: Recipe
+- Client: Fridge2PlateApp
 
-### Purpose
+Files:
 
-Adapter allows an incompatible recipe representation to be integrated without changing the existing recipe-processing logic.
+- `Fridge2Plate/Patterns/Adapter/LegacyRecipe.swift`
+- `Fridge2Plate/Patterns/Adapter/RecipeAdapter.swift`
 
-Implemented in:
+The demo Chicken Omelette is created using LegacyRecipe and converted through RecipeAdapter.
+
+### 3. Strategy — Behavioral Pattern
+
+**Problem:** Recipe searching may require different algorithms.
+
+**Solution:** The application defines the RecipeSearchStrategy protocol and multiple implementations.
+
+Implemented strategies:
+
+**ExactMatchStrategy**
+
+Returns only recipes for which every required ingredient is available.
+
+**MissingIngredientsStrategy**
+
+Allows recipes to be found even when a configured number of ingredients is missing.
+
+Example:
 
 ```text
-Fridge2Plate/Patterns/Adapter/LegacyRecipe.swift
-Fridge2Plate/Patterns/Adapter/RecipeAdapter.swift
+Available:
+Eggs, Cheese, Tomato
+
+ExactMatchStrategy:
+- Omelette
+
+MissingIngredientsStrategy (maximum missing: 1):
+- Omelette
+- Chicken Omelette
 ```
+
+`FridgeManager` delegates searching to the selected strategy.
+
+Participants:
+
+- Strategy: RecipeSearchStrategy
+- Concrete strategies: ExactMatchStrategy, MissingIngredientsStrategy
+- Context: FridgeManager
+
+Files:
+
+- `Fridge2Plate/Patterns/Strategy/RecipeSearchStrategy.swift`
+- `Fridge2Plate/Patterns/Strategy/ExactMatchStrategy.swift`
+- `Fridge2Plate/Patterns/Strategy/MissingIngredientsStrategy.swift`
+
+This design allows new search algorithms to be added without changing the core recipe-management logic.
 
 ---
 
-## 3. Behavioral Pattern — Strategy
+## Dependency Injection
 
-### Problem
+FridgeViewModel does not create RecipeService internally.
 
-Recipe filtering may require different algorithms.
-
-For example:
-
-1. show only recipes for which every ingredient is available;
-2. show recipes that are missing no more than one ingredient.
-
-Putting every algorithm directly inside `FridgeManager` would increase its responsibility and require modifying it whenever a new search algorithm is introduced.
-
-### Solution
-
-The project defines:
-
-```text
-RecipeSearchStrategy
-```
-
-with multiple implementations:
-
-```text
-ExactMatchStrategy
-MissingIngredientsStrategy
-```
-
-`FridgeManager` delegates recipe filtering to the selected strategy.
-
-### ExactMatchStrategy
-
-Returns recipes only when all required ingredients are available.
-
-```text
-Eggs + Cheese + Tomato
-        ↓
-ExactMatchStrategy
-        ↓
-Omelette
-```
-
-### MissingIngredientsStrategy
-
-Can return recipes even when a configured number of ingredients is missing.
-
-For example:
-
-```text
-Eggs + Cheese + Tomato
-        ↓
-MissingIngredientsStrategy
-        ↓
-Omelette
-Chicken Omelette
-```
-
-when one missing ingredient is allowed.
-
-### Participants
-
-- **Strategy:** `RecipeSearchStrategy`
-- **Concrete Strategy:** `ExactMatchStrategy`
-- **Concrete Strategy:** `MissingIngredientsStrategy`
-- **Context:** `FridgeManager`
-
-### Purpose
-
-Strategy allows the recipe-search algorithm to change independently from `FridgeManager`.
-
-Implemented in:
-
-```text
-Fridge2Plate/Patterns/Strategy/RecipeSearchStrategy.swift
-Fridge2Plate/Patterns/Strategy/ExactMatchStrategy.swift
-Fridge2Plate/Patterns/Strategy/MissingIngredientsStrategy.swift
-```
-
----
-
-# Dependency Injection
-
-`FridgeViewModel` does not create its service internally.
-
-Instead, the dependency is passed through its initializer:
+Instead, it receives the service through its initializer:
 
 ```swift
 init(recipeService: RecipeServiceProtocol) {
@@ -612,52 +486,9 @@ init(recipeService: RecipeServiceProtocol) {
 }
 ```
 
-This is **initializer-based Dependency Injection**.
+This is initializer-based **Dependency Injection (DI)**.
 
-The actual dependency is assembled externally in `Fridge2PlateApp`.
-
-```text
-Fridge2PlateApp
-       │
-       ▼
-RecipeService
-       │
-       ▼
-FridgeViewModel
-```
-
-This makes the ViewModel easier to test and prevents it from being tightly coupled to one concrete service implementation.
-
----
-
-# Real and Mock Service Substitution
-
-The project defines the abstraction:
-
-```text
-RecipeServiceProtocol
-```
-
-and two implementations:
-
-```text
-RecipeService
-MockRecipeService
-```
-
-Therefore:
-
-```text
-                  RecipeService
-                       │
-                       ▼
-FridgeViewModel → RecipeServiceProtocol
-                       ▲
-                       │
-                MockRecipeService
-```
-
-The production application can use:
+The real service is created externally:
 
 ```swift
 let recipeService = RecipeService(
@@ -669,7 +500,7 @@ let viewModel = FridgeViewModel(
 )
 ```
 
-For testing or demonstration, it can instead receive:
+The same ViewModel can receive a mock implementation:
 
 ```swift
 let mockService = MockRecipeService(
@@ -681,234 +512,776 @@ let viewModel = FridgeViewModel(
 )
 ```
 
-No changes inside `FridgeViewModel` are required.
+No changes inside FridgeViewModel are required.
 
----
+### Dependency Injection vs Dependency Inversion
 
-# Dependency Injection vs Dependency Inversion
+Dependency Injection is a technique for supplying dependencies from outside an object.
 
-These concepts are related but are not the same.
-
-### Dependency Injection
-
-Dependency Injection is a **technique** for providing an object's dependencies from outside.
-
-Example:
-
-```swift
-init(recipeService: RecipeServiceProtocol)
-```
-
-`FridgeViewModel` receives its dependency instead of constructing it internally.
-
-### Dependency Inversion Principle
-
-Dependency Inversion is a **design principle** stating that high-level modules should depend on abstractions rather than concrete low-level implementations.
+Dependency Inversion is a design principle requiring high-level modules to depend on abstractions rather than concrete implementations.
 
 In Fridge2Plate:
 
 ```text
-FridgeViewModel
-       ↓
-RecipeServiceProtocol
-       ↑
-RecipeService / MockRecipeService
+             FridgeViewModel
+                    |
+                    v
+         RecipeServiceProtocol
+                    ^
+                    |
+          +---------+---------+
+          |                   |
+     RecipeService      MockRecipeService
 ```
-
-The ViewModel depends on the protocol rather than directly on `RecipeService`.
 
 ---
 
-# SOLID Principles
+## SOLID Principles
 
-## S — Single Responsibility Principle
+### S — Single Responsibility Principle
 
 Each component has a focused responsibility.
 
 | Component | Responsibility |
 | --- | --- |
-| `ContentView` | Display UI |
-| `FridgeViewModel` | Presentation state and communication with service |
-| `RecipeService` | Recipe service operations |
-| `FridgeManager` | Manage recipes and delegate searching |
-| `RecipeBuilder` | Construct recipes |
-| `RecipeAdapter` | Convert legacy recipes |
-| Search strategies | Implement individual search algorithms |
+| ContentView | Connect UI screens and navigation |
+| FridgeViewModel | Manage observable application state |
+| RecipeService | Provide recipe-search operations |
+| FridgeManager | Store recipes and delegate searching |
+| RecipeBuilder | Construct recipes |
+| RecipeAdapter | Convert legacy recipes |
+| Search strategies | Implement search algorithms |
+| AppRouter | Manage navigation state |
 
-This avoids placing UI, data creation, filtering, and state management in one class.
+### O — Open/Closed Principle
 
----
+The Strategy pattern allows additional search algorithms to be introduced without modifying existing strategy implementations.
 
-## O — Open/Closed Principle
+### L — Liskov Substitution Principle
 
-Software entities should be open for extension but closed for unnecessary modification.
+RecipeService and MockRecipeService conform to RecipeServiceProtocol.
 
-`RecipeSearchStrategy` demonstrates this principle.
+They can be substituted where that protocol is expected, provided they satisfy its behavioral contract.
 
-A new algorithm can be added:
+### I — Interface Segregation Principle
 
-```text
-CalorieLimitStrategy
-FavoriteRecipeStrategy
-FastRecipeStrategy
-```
+The project uses small, focused protocols:
 
-without changing the existing `ExactMatchStrategy` or `MissingIngredientsStrategy`.
+- Displayable
+- RecipeServiceProtocol
+- RecipeSearchStrategy
 
-`FridgeManager` can work with any implementation of `RecipeSearchStrategy`.
+Clients depend only on the operations they require.
 
----
+### D — Dependency Inversion Principle
 
-## L — Liskov Substitution Principle
+FridgeViewModel depends on RecipeServiceProtocol rather than a concrete RecipeService implementation.
 
-Implementations of an abstraction should be usable wherever that abstraction is expected.
-
-`FridgeViewModel` accepts:
-
-```text
-RecipeServiceProtocol
-```
-
-Therefore both:
-
-```text
-RecipeService
-MockRecipeService
-```
-
-can be supplied without changing the ViewModel.
-
-The same concept applies to implementations of `RecipeSearchStrategy`.
+This reduces coupling and supports dependency substitution.
 
 ---
 
-## I — Interface Segregation Principle
+## Anti-Patterns and Improvements
 
-Protocols should remain focused instead of forcing clients to depend on functionality they do not use.
+### Excessive Responsibility
 
-The project uses small protocols:
+In Practical Work 1, ContentView created data, performed business operations, and displayed the result.
 
-```text
-RecipeServiceProtocol
-RecipeSearchStrategy
-Displayable
-```
+In Practical Work 2, these responsibilities were separated between Views, ViewModel, Services, Models, and Patterns.
 
-Each protocol describes a specific responsibility.
+### Direct UI–Business Logic Coupling
 
-For example, `FridgeViewModel` depends only on the recipe-search functionality it requires.
+The UI no longer performs recipe filtering directly.
 
----
-
-## D — Dependency Inversion Principle
-
-High-level modules depend on abstractions instead of concrete implementations.
-
-Instead of:
+Instead:
 
 ```text
-FridgeViewModel → RecipeService
-```
-
-the project uses:
-
-```text
-FridgeViewModel → RecipeServiceProtocol ← RecipeService
-                                      ← MockRecipeService
-```
-
-This reduces coupling and enables dependency substitution.
-
----
-
-# Anti-Patterns and Improvements
-
-## Excessive Responsibility / God Object
-
-### Before
-
-In the initial implementation, `ContentView` was responsible for several tasks:
-
-- creating ingredients;
-- creating recipes;
-- creating `FridgeManager`;
-- running recipe filtering;
-- storing presentation data;
-- displaying the UI.
-
-This mixed several responsibilities in one component.
-
-### After
-
-Practical Work 2 separates these responsibilities between:
-
-```text
-View
-ViewModel
-Services
-Models
-Patterns
-Composition Root
-```
-
----
-
-## Direct UI–Business Logic Coupling
-
-### Before
-
-`ContentView` directly communicated with business logic and created its dependencies.
-
-### After
-
-The interaction is:
-
-```text
-ContentView
-     ↓
+SwiftUI View
+     |
+     v
 FridgeViewModel
-     ↓
+     |
+     v
 RecipeServiceProtocol
-     ↓
+     |
+     v
 Business Logic
 ```
 
-The View no longer needs to know how recipes are searched.
+### Hidden Global Dependencies
+
+The application avoids global singleton services and uses explicit dependency creation and injection.
+
+### Duplication
+
+Recipe-search algorithms are separated into Strategy implementations.
+
+Recipe construction and legacy conversion are also isolated in Builder and Adapter components.
 
 ---
 
-## Hidden Global Dependencies
+## Practical Work 2 — Team Contributions
 
-The project avoids global singleton services.
+### Bohdana
 
-Dependencies are explicitly created and passed through initializers.
+- Reorganized the project into MVVM-related folders.
+- Created FridgeViewModel.
+- Separated presentation responsibilities.
+- Implemented RecipeBuilder.
 
-This makes dependencies visible and replaceable.
+Commits:
+
+- `ed646c9` — Create MVVM architecture skeleton
+- `40df7d4` — Add Recipe Builder pattern
+
+### Yevhenii
+
+- Created RecipeServiceProtocol.
+- Implemented RecipeService.
+- Implemented MockRecipeService.
+- Added dependency injection.
+- Implemented RecipeSearchStrategy.
+- Implemented ExactMatchStrategy.
+- Implemented MissingIngredientsStrategy.
+- Updated FridgeManager to use Strategy.
+- Documented SOLID principles.
+
+Commits:
+
+- `970c381` — Add recipe service abstraction and dependency injection
+- `d925156` — Add mock recipe service for dependency substitution
+- `86f930d` — Add recipe search Strategy pattern
+
+### Nadiia
+
+- Implemented LegacyRecipe.
+- Implemented RecipeAdapter.
+- Integrated Adapter into the demo scenario.
+- Verified the application in Xcode.
+- Tested the application in iOS Simulator.
+
+Commit:
+
+- `28c452a` — Add Recipe Adapter pattern
+
+## Result
+
+Practical Work 2 produced a more modular application with:
+
+- MVVM architecture.
+- Separated responsibilities.
+- Three design pattern categories.
+- Dependency Injection.
+- Service abstraction.
+- Mock dependency substitution.
+- SOLID principles.
+- Improved maintainability.
+
+**Git tag:** `practical-2`
 
 ---
 
-## Duplication
+# Practical Work 3 — User Interface, Navigation and Animations
 
-Recipe-search algorithms are isolated in Strategy implementations rather than duplicated across UI or service classes.
+## Goal
 
-Object creation and legacy conversion are also centralized in their corresponding Builder and Adapter components.
+The goal of Practical Work 3 was to implement a complete user scenario across several screens, organize navigation through a separate Router, support modal presentation and data transfer, and add animations related to user actions.
+
+The implementation builds on the MVVM architecture from Practical Work 2.
+
+## Implemented Functionality
+
+Practical Work 3 introduced:
+
+- Three main SwiftUI screens.
+- An additional modal ingredient form.
+- NavigationStack-based navigation.
+- A separate navigation Router.
+- Data transfer between screens.
+- Back navigation.
+- Modal presentation and dismissal.
+- Ingredient creation and removal.
+- Automatic recipe list updates.
+- Animated ingredient expansion.
+- Form validation.
+- Keyboard handling.
+- Interface screenshots.
 
 ---
 
-# Pattern and SOLID Mapping
+## Screens
 
-| Type | Pattern / Principle | Component | Purpose |
-| --- | --- | --- | --- |
-| Architecture | MVVM | `ContentView`, `FridgeViewModel`, Models | Separate UI, presentation state and domain data |
-| Creational | Builder | `RecipeBuilder` | Step-by-step creation of recipes |
-| Structural | Adapter | `RecipeAdapter` | Convert incompatible recipe representations |
-| Behavioral | Strategy | `RecipeSearchStrategy` | Support interchangeable search algorithms |
-| SOLID | SRP | Views, ViewModel, Services, Patterns | Separate responsibilities |
-| SOLID | OCP | `RecipeSearchStrategy` | Add search algorithms without changing existing ones |
-| SOLID | LSP | `RecipeServiceProtocol` implementations | Substitute real and mock services |
-| SOLID | ISP | Small focused protocols | Avoid unnecessary dependencies |
-| SOLID | DIP | `FridgeViewModel → RecipeServiceProtocol` | Depend on abstraction |
-| Technique | Dependency Injection | `FridgeViewModel.init` | Supply service from outside |
+The application contains three main screens and one modal form.
+
+### 1. FridgeHomeView — My Fridge
+
+The main screen displays ingredients currently available in the fridge.
+
+Features:
+
+- View available ingredients.
+- Add an ingredient.
+- Remove an ingredient with a swipe gesture.
+- Navigate to the recipe list.
+
+File:
+
+`Fridge2Plate/Views/FridgeHomeView.swift`
+
+### 2. RecipeListView — Available Recipes
+
+Displays recipes that can be prepared using the current ingredients.
+
+Features:
+
+- View matching recipes.
+- Display ingredient count.
+- Open recipe details.
+- Display an empty state when no recipes are available.
+
+The screen observes FridgeViewModel, allowing the recipe list to update when the ingredients change.
+
+File:
+
+`Fridge2Plate/Views/RecipeListView.swift`
+
+### 3. RecipeDetailView — Recipe Details
+
+Displays detailed information about the selected recipe.
+
+Features:
+
+- Recipe name.
+- Ingredient count.
+- Number of servings.
+- Calculated calorie information, when available.
+- Expandable ingredient list.
+- Custom expansion and collapse animation.
+
+File:
+
+`Fridge2Plate/Views/RecipeDetailView.swift`
+
+### 4. AddIngredientView — Modal Form
+
+A modal form that allows the user to add an ingredient.
+
+Features:
+
+- Ingredient name input.
+- Save and Cancel buttons.
+- Empty-name validation.
+- Duplicate ingredient validation.
+- Keyboard dismissal.
+- Automatic closing after successful creation.
+
+File:
+
+`Fridge2Plate/Views/AddIngredientView.swift`
+
+---
+
+## Navigation Architecture — Router
+
+The project uses a separate AppRouter to manage navigation.
+
+File:
+
+`Fridge2Plate/Navigation/AppRouter.swift`
+
+The Router manages:
+
+- Navigation path.
+- Opening the recipe list.
+- Opening recipe details.
+- Opening the ingredient creation sheet.
+- Dismissing the modal sheet.
+- Returning to previous screens.
+- Returning to the root screen.
+
+It uses two route definitions:
+
+**AppRoute**
+
+Represents stack navigation destinations:
+
+```swift
+enum AppRoute: Hashable {
+    case recipes
+    case recipeDetails(String)
+}
+```
+
+**AppSheet**
+
+Represents modal destinations:
+
+```swift
+enum AppSheet: String, Identifiable {
+    case addIngredient
+
+    var id: String {
+        rawValue
+    }
+}
+```
+
+The navigation path and active sheet are observable properties:
+
+```swift
+@Published var path: [AppRoute] = []
+@Published var activeSheet: AppSheet?
+```
+
+ContentView connects the Router to NavigationStack and the modal presentation.
+
+---
+
+## Navigation Map
+
+```text
+                    FridgeHomeView
+                      (My Fridge)
+                           |
+               +-----------+-----------+
+               |                       |
+               v                       v
+         Show Recipes             Add Ingredient
+               |                       |
+               v                       v
+        RecipeListView         AddIngredientView
+               |                (Modal Sheet)
+               |                       |
+               |                +------+------+
+               |                |             |
+               |              Save          Cancel
+               |                |             |
+               |                v             v
+               |          Update State    Close Sheet
+               |                |
+               |                v
+               |          Recalculate
+               |            Recipes
+               |                |
+               |                v
+               |          Return to
+               |          My Fridge
+               |
+               v
+        Select a Recipe
+               |
+               v
+       RecipeDetailView
+               |
+               +---- Show / Hide Ingredients
+               |       (Custom Animation)
+               |
+               v
+         Back to Recipes
+               |
+               v
+          Back to Fridge
+```
+
+### Stack Navigation
+
+NavigationStack is used for transitions between:
+
+```text
+FridgeHomeView
+      |
+      v
+RecipeListView
+      |
+      v
+RecipeDetailView
+```
+
+The user can return using the standard Back button.
+
+### Modal Navigation
+
+The Add Ingredient form is presented using `.sheet`.
+
+Unlike stack navigation, the modal temporarily appears above the current interface.
+
+The user can complete the form or cancel it without modifying the navigation stack.
+
+---
+
+## Data Transfer Between Screens
+
+When a user selects a recipe, AppRouter receives the Recipe object.
+
+The Router stores the recipe name as the identifier for the current demo navigation route.
+
+```swift
+func showRecipeDetails(_ recipe: Recipe) {
+    path.append(.recipeDetails(recipe.name))
+}
+```
+
+ContentView resolves the selected recipe from the available recipe collection and passes the Recipe object to RecipeDetailView.
+
+This allows the details screen to display the selected recipe's data.
+
+In the current demo, recipe names are unique. A larger application could use stable UUID identifiers.
+
+---
+
+## Ingredient State Management
+
+FridgeViewModel manages the available ingredients and recipes.
+
+Observable properties:
+
+```swift
+@Published var availableIngredients: [String]
+@Published var availableRecipes: [Recipe] = []
+```
+
+The ViewModel provides three important methods:
+
+- `addIngredient(_:)`
+- `removeIngredient(_:)`
+- `findAvailableRecipes()`
+
+### Adding an Ingredient
+
+The user enters an ingredient name in AddIngredientView.
+
+The form calls:
+
+```swift
+viewModel.addIngredient(name)
+```
+
+The ViewModel:
+
+1. Removes unnecessary whitespace.
+2. Checks for an empty name.
+3. Prevents duplicate ingredients.
+4. Adds the ingredient.
+5. Recalculates available recipes.
+6. Publishes the updated state.
+
+After successful creation, the modal closes.
+
+### Removing an Ingredient
+
+The main screen supports swipe-to-delete.
+
+The selected ingredient is passed to:
+
+```swift
+viewModel.removeIngredient(name)
+```
+
+The ViewModel removes the ingredient and recalculates the available recipes.
+
+### Automatic UI Updates
+
+Because the ViewModel uses `@Published`, SwiftUI observes state changes and updates the interface.
+
+The user does not need to restart the application.
+
+---
+
+## Custom Animation
+
+Practical Work 3 includes a custom animation in RecipeDetailView.
+
+The implementation uses:
+
+```swift
+@State private var showIngredients = false
+```
+
+The user can expand or collapse the ingredient list.
+
+The state change is animated using:
+
+```swift
+withAnimation(.easeInOut(duration: 0.3)) {
+    showIngredients.toggle()
+}
+```
+
+Ingredient rows use opacity and movement transitions.
+
+This is a user-triggered state animation, not just a standard navigation transition.
+
+The implementation also considers the system Reduce Motion preference.
+
+---
+
+## Complete User Scenario
+
+The following scenario demonstrates the main functionality of Practical Work 3.
+
+### Step 1 — Open the Application
+
+Launch Fridge2Plate.
+
+The main screen displays:
+
+```text
+My Fridge
+
+Eggs
+Cheese
+Tomato
+```
+
+### Step 2 — View Available Recipes
+
+Tap **Show Recipes**.
+
+The application displays:
+
+```text
+Available Recipes
+
+Omelette
+```
+
+Chicken Omelette is unavailable because Chicken is missing.
+
+### Step 3 — View Recipe Details
+
+Tap **Omelette**.
+
+The Recipe Details screen opens.
+
+The user can view the recipe name, number of servings, ingredient count, and calculated calories.
+
+### Step 4 — Demonstrate the Animation
+
+Tap **Show Ingredients**.
+
+The ingredient list expands with an animation.
+
+Tap **Hide Ingredients**.
+
+The list collapses.
+
+### Step 5 — Return to the Main Screen
+
+Use the Back button to return to Recipes, then back to My Fridge.
+
+### Step 6 — Add an Ingredient
+
+Tap **Add Ingredient**.
+
+The modal form opens.
+
+Enter:
+
+```text
+Chicken
+```
+
+Tap **Save**.
+
+The form closes and Chicken appears in the fridge.
+
+### Step 7 — Check Updated Recipes
+
+Open **Show Recipes** again.
+
+The application now displays:
+
+```text
+Omelette
+Chicken Omelette
+```
+
+The list updates without restarting the application.
+
+### Step 8 — Open Chicken Omelette
+
+Select **Chicken Omelette**.
+
+The details screen opens with information about the selected recipe.
+
+Return to the previous screen.
+
+### Step 9 — Remove Chicken
+
+Return to My Fridge.
+
+Swipe left on Chicken and delete it.
+
+The ingredient disappears.
+
+Open Recipes again.
+
+The available list returns to:
+
+```text
+Omelette
+```
+
+This demonstrates correct state management and recipe recalculation.
+
+---
+
+## Interface Screenshots
+
+Screenshots of the implemented interface are stored in:
+
+`docs/practical-3/screenshots/`
+
+### 1. Fridge Home Screen
+
+![Fridge Home](docs/practical-3/screenshots/01-fridge-home.png)
+
+The main screen displays available ingredients and navigation actions.
+
+### 2. Add Ingredient Modal
+
+![Add Ingredient](docs/practical-3/screenshots/02-add-ingredient.png)
+
+The modal form allows the user to enter a new ingredient.
+
+### 3. Available Recipes
+
+![Recipes](docs/practical-3/screenshots/03-recipes.png)
+
+The recipe list displays recipes matching the current fridge ingredients.
+
+### 4. Recipe Details
+
+![Recipe Details](docs/practical-3/screenshots/04-recipe-details.png)
+
+The details screen displays information about the selected recipe.
+
+### 5. Expanded Ingredients
+
+![Expanded Ingredients](docs/practical-3/screenshots/05-expanded-ingredients.png)
+
+The expanded ingredient section demonstrates the animated UI state.
+
+---
+
+## Interface Testing
+
+The application should be checked on at least two different iPhone Simulator sizes.
+
+Testing covers:
+
+| Test Case | Expected Result |
+| --- | --- |
+| Launch application | Main screen displays correctly |
+| Open Recipes | Recipe list appears |
+| Open Recipe Details | Selected recipe is displayed |
+| Back navigation | Previous screen opens |
+| Open Add Ingredient | Modal form appears |
+| Save Chicken | Ingredient is added |
+| Reopen Recipes | Chicken Omelette becomes available |
+| Delete Chicken | Recipe list is recalculated |
+| Empty input | Save is unavailable |
+| Duplicate ingredient | Validation error appears |
+| Cancel modal | Form closes without changes |
+| Expand ingredients | Animated list appears |
+| Collapse ingredients | Animated list disappears |
+| Repeated navigation | Navigation remains consistent |
+| Keyboard interaction | Input and completion actions remain accessible |
+| Different screen sizes | UI remains readable without overlapping elements |
+
+The interface should be verified on both compact and large iPhone simulators before final submission.
+
+### State Persistence
+
+The current application uses local in-memory demo data.
+
+Ingredient changes remain available while navigating during the current application session.
+
+The demo data is recreated when the application is completely restarted.
+
+Persistent storage is outside the scope of Practical Work 3.
+
+---
+
+## Practical Work 3 — Team Contributions
+
+### Bohdana — Navigation Architecture
+
+Responsible for:
+
+- Designing navigation structure.
+- Creating AppRouter.
+- Defining AppRoute and AppSheet.
+- Implementing navigation path management.
+- Connecting NavigationStack.
+- Adding stack navigation.
+- Adding initial modal presentation.
+
+Branch:
+
+`feature/navigation-router`
+
+Commit:
+
+`639583c` — Add navigation router and SwiftUI navigation flow
+
+### Yevhenii — Ingredient State Management
+
+Responsible for:
+
+- Implementing addIngredient().
+- Implementing removeIngredient().
+- Validating ingredient names.
+- Preventing duplicate ingredients.
+- Recalculating available recipes.
+- Managing observable ViewModel state.
+
+Branch:
+
+`feature/ingredient-state`
+
+Commit:
+
+`c439bb2` — Add ingredient state management and recipe updates
+
+### Nadiia — SwiftUI Screens and Animations
+
+Responsible for:
+
+- Implementing FridgeHomeView.
+- Implementing RecipeListView.
+- Implementing RecipeDetailView.
+- Implementing AddIngredientView.
+- Integrating screens with AppRouter.
+- Implementing modal form interactions.
+- Implementing ingredient expansion animation.
+- Handling keyboard interaction.
+- Integrating and verifying the application in Xcode.
+- Adding interface screenshots.
+
+Branch:
+
+`feature/swiftui-screens`
+
+Commit:
+
+`b9d6e71` — Implement SwiftUI screens and animated navigation flow
+
+## Result
+
+Practical Work 3 extended Fridge2Plate with:
+
+- Multi-screen navigation.
+- A separate Router.
+- Stack-based transitions.
+- Modal presentation.
+- Data transfer between screens.
+- Dynamic ingredient management.
+- Automatic recipe updates.
+- Custom state-based animation.
+- A complete connected user scenario.
+
+The final version is intended to be marked with the `practical-3` Git tag after documentation and verification are completed.
 
 ---
 
@@ -916,106 +1289,61 @@ Object creation and legacy conversion are also centralized in their correspondin
 
 ```text
 Fridge2Plate/
-├── Models/
-│   ├── Category.swift
-│   ├── Displayable.swift
-│   ├── Ingredient.swift
-│   └── Recipe.swift
+├── Fridge2Plate.xcodeproj/
 │
-├── Views/
-│   └── ContentView.swift
-│
-├── ViewModels/
-│   └── FridgeViewModel.swift
-│
-├── Services/
-│   ├── FridgeManager.swift
-│   ├── RecipeServiceProtocol.swift
-│   ├── RecipeService.swift
-│   └── MockRecipeService.swift
-│
-├── Patterns/
-│   ├── Builder/
-│   │   └── RecipeBuilder.swift
+├── Fridge2Plate/
+│   ├── Models/
+│   │   ├── Category.swift
+│   │   ├── Displayable.swift
+│   │   ├── Ingredient.swift
+│   │   └── Recipe.swift
 │   │
-│   ├── Adapter/
-│   │   ├── LegacyRecipe.swift
-│   │   └── RecipeAdapter.swift
+│   ├── Navigation/
+│   │   └── AppRouter.swift
 │   │
-│   └── Strategy/
-│       ├── RecipeSearchStrategy.swift
-│       ├── ExactMatchStrategy.swift
-│       └── MissingIngredientsStrategy.swift
+│   ├── Views/
+│   │   ├── ContentView.swift
+│   │   ├── FridgeHomeView.swift
+│   │   ├── RecipeListView.swift
+│   │   ├── RecipeDetailView.swift
+│   │   └── AddIngredientView.swift
+│   │
+│   ├── ViewModels/
+│   │   └── FridgeViewModel.swift
+│   │
+│   ├── Services/
+│   │   ├── FridgeManager.swift
+│   │   ├── RecipeServiceProtocol.swift
+│   │   ├── RecipeService.swift
+│   │   └── MockRecipeService.swift
+│   │
+│   ├── Patterns/
+│   │   ├── Builder/
+│   │   │   └── RecipeBuilder.swift
+│   │   │
+│   │   ├── Adapter/
+│   │   │   ├── LegacyRecipe.swift
+│   │   │   └── RecipeAdapter.swift
+│   │   │
+│   │   └── Strategy/
+│   │       ├── RecipeSearchStrategy.swift
+│   │       ├── ExactMatchStrategy.swift
+│   │       └── MissingIngredientsStrategy.swift
+│   │
+│   ├── Assets.xcassets/
+│   └── Fridge2PlateApp.swift
 │
-├── Assets.xcassets/
-└── Fridge2PlateApp.swift
-```
-
----
-
-# Practical Work 2 — Team Contributions
-
-## Bohdana — MVVM and Builder
-
-Responsible for:
-
-- reorganizing the project into architecture-related folders;
-- introducing the MVVM architecture;
-- implementing `FridgeViewModel`;
-- separating View and ViewModel responsibilities;
-- implementing the creational `RecipeBuilder` pattern.
-
-Relevant commits include:
-
-```text
-Create MVVM architecture skeleton
-Add Recipe Builder pattern
-```
-
----
-
-## Yevhenii — Services, DI, Strategy and SOLID
-
-Responsible for:
-
-- `RecipeServiceProtocol`;
-- `RecipeService`;
-- `MockRecipeService`;
-- Dependency Injection;
-- Dependency Inversion;
-- service substitution;
-- `RecipeSearchStrategy`;
-- `ExactMatchStrategy`;
-- `MissingIngredientsStrategy`;
-- integration of Strategy with `FridgeManager`;
-- SOLID and architecture documentation.
-
-Relevant commits include:
-
-```text
-Add recipe service abstraction and dependency injection
-Add mock recipe service for dependency substitution
-Add recipe search Strategy pattern
-```
-
----
-
-## Nadiia — Adapter, Xcode Integration and Testing
-
-Responsible for:
-
-- `LegacyRecipe`;
-- `RecipeAdapter`;
-- integration of Adapter into the application;
-- verifying the complete project in Xcode;
-- building the project;
-- running the application in iOS Simulator;
-- checking that the existing scenario continues to work after architectural changes.
-
-Relevant commit:
-
-```text
-Add Recipe Adapter pattern
+├── docs/
+│   └── practical-3/
+│       └── screenshots/
+│           ├── 01-fridge-home.png
+│           ├── 02-add-ingredient.png
+│           ├── 03-recipes.png
+│           ├── 04-recipe-details.png
+│           └── 05-expanded-ingredients.png
+│
+├── .gitignore
+└── README.md
 ```
 
 ---
@@ -1030,74 +1358,43 @@ Add Recipe Adapter pattern
 
 ## Steps
 
-1. Clone the repository.
-2. Open:
+1. Clone the repository:
 
-```text
-Fridge2Plate.xcodeproj
+```bash
+git clone https://github.com/yellowBlackie/Fridge2Plate.git
 ```
 
-3. Select an iPhone Simulator.
-4. Build using:
+2. Open the project directory:
+
+```bash
+cd Fridge2Plate
+```
+
+3. Open `Fridge2Plate.xcodeproj` in Xcode.
+
+4. Select an available iPhone Simulator.
+
+5. Build the project:
 
 ```text
 Command + B
 ```
 
-5. Run using:
+6. Run the application:
 
 ```text
 Command + R
 ```
 
----
-
-# How to Verify the Demo Scenario
-
-After launching the application, the **My Fridge** section should contain:
-
-```text
-Eggs
-Cheese
-Tomato
-```
-
-The **Recipes You Can Cook** section should contain:
-
-```text
-Omelette
-3 ingredients
-```
-
-`Chicken Omelette` should not appear with `ExactMatchStrategy`, because `Chicken` is not available.
-
-This verifies the complete chain:
-
-```text
-SwiftUI View
-     ↓
-FridgeViewModel
-     ↓
-RecipeServiceProtocol
-     ↓
-RecipeService
-     ↓
-FridgeManager
-     ↓
-ExactMatchStrategy
-     ↓
-Recipe result
-```
-
-The application was successfully built and tested using an iOS Simulator.
+7. Follow the Practical Work 3 user scenario to verify navigation and ingredient management.
 
 ---
 
 # Testing Business Logic Separately from UI
 
-The architecture allows business logic to be tested without SwiftUI.
+The architecture allows the business logic to be tested without launching SwiftUI screens.
 
-For example, `FridgeViewModel` can receive `MockRecipeService`:
+For example, FridgeViewModel can receive a MockRecipeService:
 
 ```swift
 let mockService = MockRecipeService(
@@ -1109,131 +1406,139 @@ let viewModel = FridgeViewModel(
 )
 ```
 
-The ViewModel can then be tested without:
+This allows testing of ViewModel behavior without using the real RecipeService.
 
-- `ContentView`;
-- iOS Simulator;
-- real recipe service implementation.
-
-Search algorithms can also be tested independently by creating a concrete `RecipeSearchStrategy` and passing recipe/ingredient collections directly to it.
+Search strategies can also be tested separately by passing predefined recipe and ingredient collections directly to them.
 
 ---
 
 # Git Workflow
 
-Development uses:
+Development is organized using Git and GitHub.
 
-- feature branches;
-- separate commits for logical stages;
-- Pull Requests;
-- `main` as the integrated project branch;
-- `.gitignore`;
-- tags for completed practical works.
+The team uses:
 
-Main Practical Work 2 branches:
+- Separate feature branches.
+- Individual commits for development stages.
+- Pull Requests for integration.
+- The `main` branch for completed changes.
+- `.gitignore` for generated files.
+- Git tags for completed practical works.
 
-```text
-feature/mvvm-architecture
-feature/service-strategy
-feature/adapter-integration
-```
+## Practical Work 1 Branches
 
-Important architecture stages were intentionally stored as separate commits.
+- `feature/models`
+- `feature/fridge-manager`
+- `feature/demo-scenario`
+
+## Practical Work 2 Branches
+
+- `feature/mvvm-architecture`
+- `feature/service-strategy`
+- `feature/adapter-integration`
+
+## Practical Work 3 Branches
+
+- `feature/navigation-router`
+- `feature/ingredient-state`
+- `feature/swiftui-screens`
 
 ---
 
 # Practical Work Versions
 
-## Practical Work 1
+| Version | Focus | Git Tag |
+| --- | --- | --- |
+| Practical Work 1 | Swift basics, models, business logic, SwiftUI demo | `practical-1` |
+| Practical Work 2 | MVVM, Builder, Adapter, Strategy, SOLID, Dependency Injection | `practical-2` |
+| Practical Work 3 | Navigation, Router, modal forms, state management, animations | `practical-3` (final tag) |
 
-Focus:
-
-```text
-Swift basics
-Domain models
-Collections
-Optional
-Business logic
-SwiftUI demo
-Git/GitHub
-```
-
-Final tag:
-
-```text
-practical-1
-```
-
-## Practical Work 2
-
-Focus:
-
-```text
-MVVM
-Architecture separation
-Builder
-Adapter
-Strategy
-SOLID
-Dependency Injection
-Dependency Inversion
-Mock dependency substitution
-Anti-pattern prevention
-```
-
-Final tag:
-
-```text
-practical-2
-```
+Each practical work builds on the implementation completed in the previous stage.
 
 ---
 
 # Defense Topics
 
-The project demonstrates the material required for defense:
+## Practical Work 1
 
-- why MVVM was selected;
-- advantages and limitations of MVVM;
-- difference between architecture and a design pattern;
-- problem solved by Builder;
-- problem solved by Adapter;
-- problem solved by Strategy;
-- Single Responsibility Principle;
-- Open/Closed Principle;
-- Liskov Substitution Principle;
-- Interface Segregation Principle;
-- Dependency Inversion Principle;
-- difference between Dependency Injection and Dependency Inversion;
-- dependency substitution using `MockRecipeService`;
-- testing business logic independently from SwiftUI and real services.
+- Difference between `struct` and `class`.
+- Difference between `let` and `var`.
+- Protocols and enums.
+- Optional values and safe unwrapping.
+- Collection processing.
+- Git branches, commits, push and pull.
+
+## Practical Work 2
+
+- Why MVVM was selected.
+- Architecture versus design patterns.
+- Builder, Adapter and Strategy.
+- SOLID principles.
+- Dependency Injection versus Dependency Inversion.
+- Real and mock service substitution.
+- Testing business logic independently of UI.
+
+## Practical Work 3
+
+- Responsibilities of Router or Coordinator.
+- Differences between stack and modal navigation.
+- Passing data to the next screen.
+- Updating previous screens after user actions.
+- Observable state management.
+- Strong reference cycles in navigation components.
+- Testing animations and accessibility.
+- Verifying interface behavior on different screen sizes.
 
 ---
 
 # Summary
 
-Fridge2Plate evolved through two practical works.
+Fridge2Plate was developed incrementally through three practical works.
 
 **Practical Work 1** established the application foundation:
 
 ```text
-Swift + Domain Model + Business Logic + SwiftUI + Git
+Swift
++
+Domain Models
++
+Recipe Search
++
+SwiftUI Demo
++
+Git/GitHub
 ```
 
-**Practical Work 2** reorganized that implementation into a modular architecture:
+**Practical Work 2** improved the internal architecture:
 
 ```text
 MVVM
-  +
++
 Builder
-  +
++
 Adapter
-  +
++
 Strategy
-  +
++
 SOLID
-  +
++
 Dependency Injection
 ```
 
-The result is a small but structured iOS application in which presentation, business logic, object creation, data adaptation, and search algorithms have clearly separated responsibilities.
+**Practical Work 3** introduced user interaction and navigation:
+
+```text
+SwiftUI Screens
++
+AppRouter
++
+NavigationStack
++
+Modal Forms
++
+Observable State
++
+Custom Animations
+```
+
+The result is a small but structured iOS application with clearly separated responsibilities, reusable components, centralized navigation, and a complete recipe-discovery user scenario.
