@@ -61,6 +61,9 @@ struct ContentView: View {
                     OnlineRecipesView(
                         liveService: onlineService
                     )
+
+                case .onlineRecipeDetails(let meal):
+                    OnlineRecipeDetailView(meal: meal)
                 }
             }
             .sheet(item: $router.activeSheet) { _ in

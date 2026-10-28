@@ -5,6 +5,7 @@ enum AppRoute: Hashable {
     case recipes
     case recipeDetails(String)
     case onlineRecipes
+    case onlineRecipeDetails(RemoteMeal)
 }
 
 enum AppSheet: String, Identifiable {
