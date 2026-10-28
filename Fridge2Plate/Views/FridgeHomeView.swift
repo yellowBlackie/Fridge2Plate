@@ -6,6 +6,7 @@ struct FridgeHomeView: View {
 
     let onShowRecipes: () -> Void
     let onAddIngredient: () -> Void
+    let onOnlineRecipes: () -> Void
 
     var body: some View {
         List {
@@ -50,6 +51,13 @@ struct FridgeHomeView: View {
                     Label(
                         "Show Recipes",
                         systemImage: "book.closed.fill"
+                    )
+                }
+
+                Button(action: onOnlineRecipes) {
+                    Label(
+                        "Online Recipes",
+                        systemImage: "network"
                     )
                 }
             }

@@ -6,10 +6,17 @@ struct ContentView: View {
     @StateObject private var viewModel: FridgeViewModel
     @StateObject private var router = AppRouter()
 
-    init(viewModel: FridgeViewModel) {
+    private let onlineService: any OnlineRecipeServiceProtocol
+
+    init(
+        viewModel: FridgeViewModel,
+        onlineService: any OnlineRecipeServiceProtocol
+    ) {
         _viewModel = StateObject(
             wrappedValue: viewModel
         )
+
+        self.onlineService = onlineService
     }
 
     var body: some View {
@@ -22,6 +29,9 @@ struct ContentView: View {
                 },
                 onAddIngredient: {
                     router.showAddIngredient()
+                },
+                onOnlineRecipes: {
+                    router.showOnlineRecipes()
                 }
             )
             .navigationDestination(for: AppRoute.self) { route in
@@ -46,6 +56,11 @@ struct ContentView: View {
                             systemImage: "exclamationmark.triangle"
                         )
                     }
+
+                case .onlineRecipes:
+                    OnlineRecipesView(
+                        liveService: onlineService
+                    )
                 }
             }
             .sheet(item: $router.activeSheet) { _ in
