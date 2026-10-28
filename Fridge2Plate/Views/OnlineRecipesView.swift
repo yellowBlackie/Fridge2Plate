@@ -185,43 +185,47 @@ private struct OnlineRecipesResultsView: View {
 
                 case .success(let meals):
                     List(meals) { meal in
-                        HStack(spacing: 12) {
+                        NavigationLink(
+                            value: AppRoute.onlineRecipeDetails(meal)
+                        ) {
+                            HStack(spacing: 12) {
 
-                            AsyncImage(
-                                url: meal.strMealThumb.flatMap(
-                                    URL.init(string:)
+                                AsyncImage(
+                                    url: meal.strMealThumb.flatMap(
+                                        URL.init(string:)
+                                    )
+                                ) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                } placeholder: {
+                                    Image(systemName: "fork.knife")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .padding(14)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .frame(width: 64, height: 64)
+                                .clipShape(
+                                    RoundedRectangle(cornerRadius: 10)
                                 )
-                            ) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                            } placeholder: {
-                                Image(systemName: "fork.knife")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .padding(14)
-                                    .foregroundStyle(.secondary)
+
+                                VStack(
+                                    alignment: .leading,
+                                    spacing: 4
+                                ) {
+                                    Text(meal.strMeal)
+                                        .font(.headline)
+
+                                    Text("Meal ID: \(meal.idMeal)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                Spacer()
                             }
-                            .frame(width: 64, height: 64)
-                            .clipShape(
-                                RoundedRectangle(cornerRadius: 10)
-                            )
-
-                            VStack(
-                                alignment: .leading,
-                                spacing: 4
-                            ) {
-                                Text(meal.strMeal)
-                                    .font(.headline)
-
-                                Text("Meal ID: \(meal.idMeal)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-
-                            Spacer()
+                            .padding(.vertical, 4)
                         }
-                        .padding(.vertical, 4)
                     }
 
                 case .empty:
