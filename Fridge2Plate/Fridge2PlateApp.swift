@@ -5,6 +5,7 @@ struct Fridge2PlateApp: App {
 
     private let viewModel: FridgeViewModel
     private let onlineService: any OnlineRecipeServiceProtocol
+    private let library: MealLibrary
 
     init() {
         let eggs = Ingredient(
@@ -73,13 +74,16 @@ struct Fridge2PlateApp: App {
         self.onlineService = TheMealDBService(
             client: URLSessionHTTPClient()
         )
+
+        self.library = MealLibrary()
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView(
                 viewModel: viewModel,
-                onlineService: onlineService
+                onlineService: onlineService,
+                library: library
             )
         }
     }

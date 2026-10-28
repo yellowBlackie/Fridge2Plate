@@ -1,11 +1,20 @@
 import SwiftUI
 import Combine
 
+enum AppTab: Hashable {
+    case home
+    case favorites
+    case fridge
+    case profile
+}
+
 enum AppRoute: Hashable {
     case recipes
     case recipeDetails(String)
-    case onlineRecipes
+    case onlineRecipes(query: String)
     case onlineRecipeDetails(RemoteMeal)
+    case ingredientRecipes([String])
+    case previousMeals
 }
 
 enum AppSheet: String, Identifiable {
@@ -20,6 +29,7 @@ final class AppRouter: ObservableObject {
 
     @Published var path: [AppRoute] = []
     @Published var activeSheet: AppSheet?
+    @Published var selectedTab: AppTab = .home
 
     func showRecipes() {
         path.append(.recipes)
@@ -29,8 +39,25 @@ final class AppRouter: ObservableObject {
         path.append(.recipeDetails(recipe.name))
     }
 
-    func showOnlineRecipes() {
-        path.append(.onlineRecipes)
+    func showOnlineRecipes(query: String = "chicken") {
+        path.append(.onlineRecipes(query: query))
+    }
+
+    func showOnlineRecipeDetails(_ meal: RemoteMeal) {
+        path.append(.onlineRecipeDetails(meal))
+    }
+
+    func showIngredientRecipes(_ ingredients: [String]) {
+        path.append(.ingredientRecipes(ingredients))
+    }
+
+    func showPreviousMeals() {
+        path.append(.previousMeals)
+    }
+
+    func select(_ tab: AppTab) {
+        path.removeAll()
+        selectedTab = tab
     }
 
     func showAddIngredient() {

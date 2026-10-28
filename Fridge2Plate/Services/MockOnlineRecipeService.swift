@@ -20,6 +20,16 @@ final class MockOnlineRecipeService: OnlineRecipeServiceProtocol {
     func searchMeals(
         query: String
     ) async throws -> [RemoteMeal] {
+        try await scenarioResult()
+    }
+
+    func searchMeals(
+        containing ingredients: [String]
+    ) async throws -> [RemoteMeal] {
+        try await scenarioResult()
+    }
+
+    private func scenarioResult() async throws -> [RemoteMeal] {
 
         // Short delay to make Loading visible in the demo.
         try await Task.sleep(

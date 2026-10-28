@@ -13,14 +13,18 @@ enum OnlineRecipesState {
 @MainActor
 final class OnlineRecipesViewModel: ObservableObject {
 
-    @Published var searchText: String = "chicken"
+    @Published var searchText: String
 
     @Published private(set) var state: OnlineRecipesState = .idle
 
     private let service: OnlineRecipeServiceProtocol
 
-    init(service: OnlineRecipeServiceProtocol) {
+    init(
+        service: OnlineRecipeServiceProtocol,
+        searchText: String = "chicken"
+    ) {
         self.service = service
+        self.searchText = searchText
     }
 
     func search() async {

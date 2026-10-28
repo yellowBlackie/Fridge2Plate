@@ -32,46 +32,54 @@ enum OnlineRecipeSource: String, CaseIterable, Identifiable {
 struct OnlineRecipesView: View {
 
     let liveService: any OnlineRecipeServiceProtocol
+    var initialQuery: String = "chicken"
 
     @State private var selectedSource: OnlineRecipeSource = .live
 
     var body: some View {
         VStack(spacing: 0) {
 
-            HStack {
-                Text("Data Source")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-
-                Picker("Data Source", selection: $selectedSource) {
-                    ForEach(OnlineRecipeSource.allCases) { source in
-                        Text(source.title)
-                            .tag(source)
-                    }
-                }
-                .pickerStyle(.menu)
-            }
-            .padding(.horizontal)
-            .padding(.top, 8)
-
             if selectedSource != .live {
-                Text("Demo mode — no real API request")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
-                    .padding(.bottom, 8)
+                Label(
+                    "Demo mode · \(selectedSource.title) · no real API request",
+                    systemImage: "testtube.2"
+                )
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.orange)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color.orange.opacity(0.12), in: Capsule())
+                .padding(.top, 8)
             }
 
             OnlineRecipesResultsView(
-                service: service(for: selectedSource)
+                service: service(for: selectedSource),
+                initialQuery: initialQuery
             )
             .id(selectedSource)
         }
+        .background(Color(.systemGroupedBackground))
         .navigationTitle("Online Recipes")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Picker("Data Source", selection: $selectedSource) {
+                        ForEach(OnlineRecipeSource.allCases) { source in
+                            Text(source.title)
+                                .tag(source)
+                        }
+                    }
+                } label: {
+                    Image(
+                        systemName: selectedSource == .live
+                            ? "antenna.radiowaves.left.and.right"
+                            : "testtube.2"
+                    )
+                }
+                .accessibilityLabel("Data Source")
+            }
+        }
     }
 
     private func service(
@@ -116,10 +124,14 @@ private struct OnlineRecipesResultsView: View {
 
     @StateObject private var viewModel: OnlineRecipesViewModel
 
-    init(service: any OnlineRecipeServiceProtocol) {
+    init(
+        service: any OnlineRecipeServiceProtocol,
+        initialQuery: String
+    ) {
         _viewModel = StateObject(
             wrappedValue: OnlineRecipesViewModel(
-                service: service
+                service: service,
+                searchText: initialQuery
             )
         )
     }
@@ -134,32 +146,17 @@ private struct OnlineRecipesResultsView: View {
     var body: some View {
         VStack(spacing: 0) {
 
-            HStack(spacing: 12) {
-                TextField(
-                    "Search meals",
-                    text: $viewModel.searchText
-                )
-                .textFieldStyle(.roundedBorder)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .submitLabel(.search)
-                .disabled(isLoading)
-                .onSubmit {
+            SearchField(
+                placeholder: "Search meals",
+                text: $viewModel.searchText,
+                onSubmit: {
                     Task {
                         await viewModel.search()
                     }
                 }
-
-                Button("Search") {
-                    Task {
-                        await viewModel.search()
-                    }
-                }
-                .disabled(isLoading)
-            }
+            )
+            .disabled(isLoading)
             .padding()
-
-            Divider()
 
             Group {
                 switch viewModel.state {
@@ -184,49 +181,21 @@ private struct OnlineRecipesResultsView: View {
                     .frame(maxWidth: .infinity)
 
                 case .success(let meals):
-                    List(meals) { meal in
-                        NavigationLink(
-                            value: AppRoute.onlineRecipeDetails(meal)
-                        ) {
-                            HStack(spacing: 12) {
-
-                                AsyncImage(
-                                    url: meal.strMealThumb.flatMap(
-                                        URL.init(string:)
-                                    )
-                                ) { image in
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                } placeholder: {
-                                    Image(systemName: "fork.knife")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .padding(14)
-                                        .foregroundStyle(.secondary)
-                                }
-                                .frame(width: 64, height: 64)
-                                .clipShape(
-                                    RoundedRectangle(cornerRadius: 10)
-                                )
-
-                                VStack(
-                                    alignment: .leading,
-                                    spacing: 4
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(meals) { meal in
+                                NavigationLink(
+                                    value: AppRoute.onlineRecipeDetails(meal)
                                 ) {
-                                    Text(meal.strMeal)
-                                        .font(.headline)
-
-                                    Text("Meal ID: \(meal.idMeal)")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                    MealRow(meal: meal)
                                 }
-
-                                Spacer()
+                                .buttonStyle(.plain)
                             }
-                            .padding(.vertical, 4)
                         }
+                        .padding(.horizontal)
+                        .padding(.bottom)
                     }
+                    .scrollDismissesKeyboard(.interactively)
 
                 case .empty:
                     ContentUnavailableView(

@@ -1,6 +1,6 @@
 import Foundation
 
-struct RemoteIngredient: Hashable {
+struct RemoteIngredient: Hashable, Codable {
     let name: String
     let measure: String
 
@@ -17,7 +17,7 @@ struct RemoteIngredient: Hashable {
     }
 }
 
-struct RemoteMeal: Decodable, Identifiable, Hashable {
+struct RemoteMeal: Codable, Identifiable, Hashable {
     let idMeal: String
     let strMeal: String
     let strMealThumb: String?
@@ -100,6 +100,32 @@ struct RemoteMeal: Decodable, Identifiable, Hashable {
         }
 
         self.ingredients = ingredients
+    }
+
+    // Encodes back into the same flat TheMealDB format,
+    // so saved meals can be decoded with init(from:).
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: DynamicKey.self)
+
+        try container.encode(idMeal, forKey: DynamicKey("idMeal"))
+        try container.encode(strMeal, forKey: DynamicKey("strMeal"))
+        try container.encodeIfPresent(strMealThumb, forKey: DynamicKey("strMealThumb"))
+        try container.encodeIfPresent(strCategory, forKey: DynamicKey("strCategory"))
+        try container.encodeIfPresent(strArea, forKey: DynamicKey("strArea"))
+        try container.encodeIfPresent(strInstructions, forKey: DynamicKey("strInstructions"))
+
+        for (offset, ingredient) in ingredients.prefix(20).enumerated() {
+            try container.encode(ingredient.name, forKey: DynamicKey("strIngredient\(offset + 1)"))
+            try container.encode(ingredient.measure, forKey: DynamicKey("strMeasure\(offset + 1)"))
+        }
+    }
+}
+
+extension RemoteIngredient {
+
+    /// TheMealDB ingredient photo for any ingredient name.
+    static func imageURL(for name: String) -> URL? {
+        RemoteIngredient(name: name, measure: "").imageURL
     }
 }
 
