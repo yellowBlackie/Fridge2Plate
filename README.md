@@ -1,6 +1,6 @@
 # Fridge2Plate
 
-**Fridge2Plate** is a SwiftUI application that helps people find recipes using ingredients they already have. Over four practical works, the project evolved from a small local recipe demo into a multi-screen application with a separate networking layer and real server data.
+**Fridge2Plate** is a SwiftUI application that helps people find recipes using ingredients they already have. Over four practical works, the project evolved from a small local recipe demo into a multi-screen application with a separate networking layer and real server data. The latest stage adds full online recipe details and a redesigned interface with a tab bar, ingredient selection, favorites and cooking history.
 
 **Repository:** https://github.com/yellowBlackie/Fridge2Plate  
 **Platform:** iOS · Swift · SwiftUI · Xcode  
@@ -12,7 +12,7 @@
 | --- | --- | --- |
 | **Bohdana Klimenko** | IP-44 | Domain models, MVVM, Builder, navigation Router, networking and JSON models |
 | **Yevhenii Naumenko** | IP-44 | Recipe business logic, DI, Strategy, observable ingredient state, async ViewModel, mock scenarios, Git and documentation |
-| **Nadiia Podkur** | IP-41 | SwiftUI, Adapter, navigation screens, animations, online recipes UI, Xcode integration and simulator testing |
+| **Nadiia Podkur** | IP-41 | SwiftUI, Adapter, navigation screens, animations, online recipes UI, recipe details, UI redesign (Figma → SwiftUI), Xcode integration and simulator testing |
 
 ## Practical work at a glance
 
@@ -22,6 +22,7 @@
 | **2** | Architecture, patterns and SOLID | MVVM, Builder, Adapter, Strategy, DI and mock substitution | [`practical-2`](https://github.com/yellowBlackie/Fridge2Plate/tree/practical-2) |
 | **3** | Interface, navigation and animations | Router, three main screens, modal form, state-driven animation | [`practical-3`](https://github.com/yellowBlackie/Fridge2Plate/tree/practical-3) |
 | **4** | Networking and server data | TheMealDB, URLSession, typed JSON, loading/empty/error states and Retry | `practical-4`  |
+| **UI** | Recipe details and UI redesign | Full online recipes, tab bar, fridge-based search, favorites, cooking history | see [UI implementation](#ui-implementation) |
 
 ---
 
@@ -29,12 +30,13 @@
 
 ## What the app does
 
-There are two **separate** recipe scenarios:
+The app has three recipe scenarios:
 
-1. **My Fridge / Show Recipes (local):** compare a collection of built-in recipes with the ingredients in the fridge. Add or remove products and see the available recipes update immediately.
-2. **Online Recipes (remote):** search TheMealDB for meals **by name** over HTTPS. Display meal titles and thumbnails, or the loading, empty or error state.
+1. **Cook from my fridge:** select ingredients in **My Fridge** and tap **Show recipes**. The app shows online recipes from TheMealDB that contain *all* selected ingredients, plus matching built-in (local) recipes.
+2. **Online search by name:** search TheMealDB for meals by name over HTTPS. Results show the photo, category and cuisine, and open a full recipe with ingredients, measures and step-by-step instructions.
+3. **Favorites and cooking history:** save recipes with ♡ and tap **Cook this** to add a meal to **Previous meals** on the home screen. Both lists are stored on the device.
 
-The online search is **not** an ingredient-by-ingredient fridge matching algorithm. It extends the project with a real server-backed data source while the original offline scenario remains available.
+The original local recipe logic (Builder, Adapter, Strategy) from Practical Works 1–3 is still used for the local part of the fridge results.
 
 ### Local example
 
@@ -378,6 +380,152 @@ Screenshots in the repository:
 
 ---
 
+# UI implementation
+
+After Practical Work 4 the interface was extended in two steps:
+
+1. **Online recipe details** — recipes from TheMealDB became clickable and open a full recipe screen.
+2. **UI redesign** — a new home screen, tab bar, fridge-based search, favorites and cooking history, based on Figma wireframes.
+
+## 1. Online recipe details
+
+`RemoteMeal` was extended with the full recipe data returned by `search.php`, so no extra request is needed:
+
+| Field | Source in JSON | Shown as |
+| --- | --- | --- |
+| `strInstructions` | `strInstructions` | Numbered steps |
+| `strCategory`, `strArea` | `strCategory`, `strArea` | Tags, e.g. *Chicken · India* |
+| `ingredients: [RemoteIngredient]` | `strIngredient1…20` + `strMeasure1…20` | Ingredient list with measures and photos |
+
+TheMealDB stores ingredients as 20 flat pairs of fields, many of them empty. A custom `init(from:)` with a dynamic `CodingKey` collects the non-empty pairs into one array. `RemoteMeal` is also `Encodable` (written back in the same flat format), so meals can be saved on the device.
+
+`RemoteIngredient.imageURL` builds the TheMealDB ingredient photo URL (`/images/ingredients/<name>-small.png`), used both in recipes and in My Fridge.
+
+`OnlineRecipeDetailView` shows the meal photo, title, tags, ingredients and instruction steps (lines such as `STEP 1` are filtered out). It is opened through a new route:
+
+```swift
+case onlineRecipeDetails(RemoteMeal)   // AppRoute
+```
+
+Back navigation is the standard `NavigationStack` path, so **Back** returns to the list the recipe was opened from.
+
+## 2. Redesign: from wireframes to SwiftUI
+
+The Figma frames were treated as a structural skeleton, not a pixel-perfect spec. The final UI keeps the structure (intro card, online search, ingredient circles, *Previous meals* carousel, fridge list with *Show recipe*, bottom bar with ♡ / ＋ / profile) and adds a consistent visual style:
+
+- **Accent color:** fresh green (`AccentColor` asset) with a separate dark-mode shade; lavender-to-green gradient on the intro card.
+- **Cards:** large rounded corners (continuous), soft shadows, photo-first meal cards. Technical details such as meal IDs are hidden; category and cuisine are shown instead.
+- **Real images:** meal photos and TheMealDB ingredient photos, with a letter/icon placeholder while loading.
+- **System behaviour:** Dynamic Type fonts, light and dark mode, SF Symbols with symbol transitions, haptic feedback for Cook and Favorite, accessibility labels on icon-only buttons.
+
+### Navigation map
+
+```text
+MainTabView (custom bottom bar)
+├── Home ── FridgeHomeView
+│     ├── Search field ─────────────→ OnlineRecipesView(query) → OnlineRecipeDetailView
+│     ├── My Fridge circles / "›" ──→ Fridge tab
+│     ├── "+" circle ───────────────→ AddIngredientView (.sheet)
+│     └── Previous meals card / "›" → OnlineRecipeDetailView / PreviousMealsView
+├── Favorites ── FavoritesView ─────→ OnlineRecipeDetailView
+├── ＋ (center) ────────────────────→ AddIngredientView (.sheet)
+├── Fridge ── MyFridgeView
+│     └── select ingredients → Show recipes → IngredientRecipesView
+│                                              ├── local recipe  → RecipeDetailView
+│                                              └── online recipe → OnlineRecipeDetailView
+└── Profile ── ProfileView ─────────→ PreviousMealsView
+```
+
+All screens share one `NavigationStack(path: router.path)`. The tab content is the root of the stack; detail screens are pushed on top and hide the bottom bar. `AppRouter` gained `selectedTab` and new routes:
+
+```swift
+enum AppRoute: Hashable {
+    case recipes
+    case recipeDetails(String)
+    case onlineRecipes(query: String)
+    case onlineRecipeDetails(RemoteMeal)
+    case ingredientRecipes([String])
+    case previousMeals
+}
+```
+
+### Screens
+
+| Screen | File | Purpose |
+| --- | --- | --- |
+| Tab container | `Views/MainTabView.swift` | Switches tab content, adds `AppBottomBar` |
+| Home | `Views/FridgeHomeView.swift` | Intro card, online search, fridge circles, Previous meals |
+| My Fridge | `Views/MyFridgeView.swift` | Select / swipe-delete ingredients, *Show recipes (n)* |
+| Recipes for you | `Views/IngredientRecipesView.swift` | Online + local recipes for the selected ingredients |
+| Online Recipes | `Views/OnlineRecipesView.swift` | Search by name; data-source menu for Practical 4 mocks |
+| Recipe | `Views/OnlineRecipeDetailView.swift` | Photo, tags, ingredients, steps, ♡ and **Cook this** |
+| Favorites | `Views/FavoritesView.swift` | Two-column grid of saved recipes |
+| Previous meals | `Views/PreviousMealsView.swift` | Full cooking history |
+| Profile | `Views/ProfileView.swift` | Basic profile: stats and *Clear cooking history* |
+| Shared UI | `Views/Components/DesignComponents.swift` | `MealCard`, `MealRow`, `IngredientAvatar`, `SectionHeader`, `SearchField`, `EmptyStateCard`, `AppBottomBar` |
+
+## 3. Cooking from the fridge
+
+`FridgeViewModel` now keeps `selectedIngredients` (`toggleSelection`, `selectAll`, `clearSelection`). **Show recipes** opens `IngredientRecipesView`, driven by `IngredientRecipesViewModel` (`@MainActor`, reuses `OnlineRecipesState`).
+
+The free TheMealDB API filters by **one** ingredient per request and returns short records, so `TheMealDBService.searchMeals(containing:)` works in three steps:
+
+```text
+for each selected ingredient → filter.php?i=<ingredient>  → set of meal IDs
+intersect the sets           → meals that contain ALL ingredients
+first 12 IDs                 → lookup.php?i=<id> (concurrently, TaskGroup) → full RemoteMeal
+```
+
+`OnlineRecipeServiceProtocol` gained this method, and `MockOnlineRecipeService` implements it with the same five scenarios, so DI and mock substitution from Practical 4 still work. Local recipes for the same selection come from the existing `RecipeService` → `FridgeManager` → `ExactMatchStrategy` chain.
+
+## 4. Favorites and Previous meals
+
+`MealLibrary` (`Services/MealLibrary.swift`) is a `@MainActor ObservableObject` shared through `.environmentObject`:
+
+| Action | Result |
+| --- | --- |
+| ♡ on the recipe screen | `toggleFavorite(_:)` → Favorites tab |
+| **Cook this** | `markCooked(_:)` → moved to the top of *Previous meals* (no duplicates) |
+| Profile → *Clear cooking history* | `clearPreviousMeals()` after confirmation |
+
+Both lists are encoded with `JSONEncoder` and saved in `UserDefaults`, so they survive an app restart. `MealLibrary` is created in `Fridge2PlateApp` (composition root) and injected into `ContentView`, like the other services.
+
+## 5. UI screenshots
+
+Screenshots of the running app (iPhone 17 Simulator, iOS 27) are in [`docs/ui-view/`](docs/ui-view).
+
+| Home — first launch | Home — with cooked meals | Add Ingredient |
+| --- | --- | --- |
+| ![Home first launch](docs/ui-view/01-home-first-launch.png) | ![Home](docs/ui-view/02-home.png) | ![Add Ingredient](docs/ui-view/03-add-ingredient.png) |
+
+| My Fridge — selection | Recipes for selected ingredients | Online search |
+| --- | --- | --- |
+| ![My Fridge](docs/ui-view/04-my-fridge-selection.png) | ![Recipes for you](docs/ui-view/05-recipes-for-ingredients.png) | ![Online Recipes](docs/ui-view/06-online-recipes.png) |
+
+| Recipe details | Favorites | Profile |
+| --- | --- | --- |
+| ![Recipe details](docs/ui-view/07-recipe-details.png) | ![Favorites](docs/ui-view/08-favorites.png) | ![Profile](docs/ui-view/09-profile.png) |
+
+| Home — dark mode | Recipe — dark mode |
+| --- | --- |
+| ![Home dark mode](docs/ui-view/10-home-dark-mode.png) | ![Recipe dark mode](docs/ui-view/11-recipe-details-dark-mode.png) |
+
+## 6. How to verify the new UI
+
+1. Launch the app: Home shows the intro card, search, *My Fridge* circles and an empty *Previous meals* card.
+2. Type `pasta` in **Find new recipe online** and press Search → results with photo, category and cuisine.
+3. Open a recipe → ingredients with measures and photos, numbered instructions. **Back** returns to the results.
+4. Tap ♡ → the recipe appears in **Favorites**. Tap **Cook this** → it appears in **Previous meals** on Home.
+5. Open **Fridge**, tick *Eggs* and *Tomato*, tap **Show recipes (2)** → online recipes that use both ingredients.
+6. Tap the green **＋** → Add Ingredient sheet; the new ingredient appears in the fridge circles and list.
+7. Open **Profile** → counters update; *Clear cooking history* empties *Previous meals*.
+8. Restart the app → favorites and cooking history are still there.
+9. Online Recipes → antenna icon → choose a mock scenario: all Practical 4 states (Loading, Empty, errors, Retry) still work.
+
+**Team:** Nadiia — recipe details (`feature/online-recipe-details`), UI redesign (`feature/home-redesign`), screenshots and documentation (`feature/readme-ui-update`).
+
+---
+
 # Project structure (current)
 
 ```text
@@ -389,7 +537,7 @@ Fridge2Plate/
 │   │   ├── Displayable.swift
 │   │   ├── Ingredient.swift
 │   │   ├── Recipe.swift
-│   │   └── RemoteMeal.swift
+│   │   └── RemoteMeal.swift          # + RemoteIngredient, Codable
 │   ├── Navigation/
 │   │   └── AppRouter.swift
 │   ├── Network/
@@ -403,17 +551,28 @@ Fridge2Plate/
 │   │   ├── MockRecipeService.swift
 │   │   ├── OnlineRecipeServiceProtocol.swift
 │   │   ├── TheMealDBService.swift
-│   │   └── MockOnlineRecipeService.swift
+│   │   ├── MockOnlineRecipeService.swift
+│   │   └── MealLibrary.swift         # favorites + cooking history
 │   ├── ViewModels/
 │   │   ├── FridgeViewModel.swift
-│   │   └── OnlineRecipesViewModel.swift
+│   │   ├── OnlineRecipesViewModel.swift
+│   │   └── IngredientRecipesViewModel.swift
 │   ├── Views/
+│   │   ├── Components/
+│   │   │   └── DesignComponents.swift
 │   │   ├── ContentView.swift
-│   │   ├── FridgeHomeView.swift
+│   │   ├── MainTabView.swift
+│   │   ├── FridgeHomeView.swift      # Home
+│   │   ├── MyFridgeView.swift
+│   │   ├── IngredientRecipesView.swift
 │   │   ├── RecipeListView.swift
 │   │   ├── RecipeDetailView.swift
 │   │   ├── AddIngredientView.swift
-│   │   └── OnlineRecipesView.swift
+│   │   ├── OnlineRecipesView.swift
+│   │   ├── OnlineRecipeDetailView.swift
+│   │   ├── FavoritesView.swift
+│   │   ├── PreviousMealsView.swift
+│   │   └── ProfileView.swift
 │   ├── Patterns/
 │   │   ├── Builder/RecipeBuilder.swift
 │   │   ├── Adapter/LegacyRecipe.swift
@@ -425,7 +584,8 @@ Fridge2Plate/
 │   └── Fridge2PlateApp.swift
 ├── docs/
 │   ├── practical-3/screenshots/
-│   └── practical-4/screenshots/
+│   ├── practical-4/screenshots/
+│   └── ui-view/
 ├── .gitignore
 └── README.md
 ```
@@ -442,16 +602,18 @@ open Fridge2Plate.xcodeproj
 
 1. Select an available iPhone Simulator in Xcode.
 2. **Command + B** — build; **Command + R** — run.
-3. On the main screen select **Online Recipes**. The app performs the default `chicken` query automatically.
-4. Try the **Data Source** Picker to exercise mock scenarios; use Retry on errors.
-5. Use **Back** to return to My Fridge and check that the existing local recipe flow still works.
+3. On **Home**, type a meal name (e.g. `chicken`) in **Find new recipe online** and press Search.
+4. Open a recipe, try ♡ and **Cook this**, then check **Favorites** and **Previous meals**.
+5. In the **Fridge** tab select ingredients and tap **Show recipes**.
+6. For the Practical 4 mock scenarios, open Online Recipes and use the antenna icon (data-source menu); use Retry on errors.
 
 No additional backend, database, environment variable or user account is required for the educational setup. TheMealDB test key `1` is part of the public v1 path; this is **not a secret production credential**.
 
 ## Testing notes and limitations
 
-- The project uses local in-memory ingredients and two local demonstration recipes; these reset after a full restart.
-- Online Recipes searches remote meals **by name** and does not import them into local FridgeManager.
+- Fridge ingredients and the two local demonstration recipes are still in memory and reset after a full restart. Favorites and cooking history are saved in `UserDefaults`.
+- *Show recipes* intersects one-ingredient filters of the free API and loads full details for the first 12 matches. Ingredient names must match TheMealDB names (e.g. `Eggs`, `Tomato`); selecting many ingredients often gives no common recipe.
+- Online recipes are not imported into the local `FridgeManager`.
 - Remote meal images are displayed through `AsyncImage`, separate from the JSON search request.
 - The code contains the UI for retry and controlled failures, but a screenshot cannot establish whether every test was performed on two real simulator sizes. Record simulator checks before claiming verified coverage.
 - `Task.sleep` in mock services is intentional for visualization; production network timing depends on connectivity.
@@ -467,6 +629,7 @@ Workflow: feature branches → commits → GitHub Pull Requests → merge to `ma
 | 2 | `feature/mvvm-architecture`, `feature/service-strategy`, `feature/adapter-integration` |
 | 3 | `feature/navigation-router`, `feature/ingredient-state`, `feature/swiftui-screens` |
 | 4 | `feature/network-api`, `feature/online-recipes-state`, `feature/online-recipes-ui` |
+| UI | `feature/online-recipe-details`, `feature/home-redesign`, `feature/readme-ui-update` |
 
 The practical works are available under tags `practical-1`, `practical-2`, `practical-3` `practical-4`.
 
@@ -475,8 +638,9 @@ The practical works are available under tags `practical-1`, `practical-2`, `prac
 **Work 1:** Swift models, Optional, `struct` vs `class`, collections, Git.  
 **Work 2:** MVVM, Builder/Adapter/Strategy, SOLID, DI vs DIP, mock substitution.  
 **Work 3:** Router, stack vs modal navigation, passing a recipe, `@Published` and animation.  
-**Work 4:** HTTP request anatomy; transport vs HTTP errors; JSONDecoder; `async/await` and `@MainActor`; service abstraction/DI; reproducible mock scenarios; Retry and real API verification.
+**Work 4:** HTTP request anatomy; transport vs HTTP errors; JSONDecoder; `async/await` and `@MainActor`; service abstraction/DI; reproducible mock scenarios; Retry and real API verification.  
+**UI:** custom `Decodable` with dynamic keys; one `NavigationStack` with a custom tab bar; routes with associated values; `TaskGroup` for parallel requests; `@EnvironmentObject` and `UserDefaults` persistence; wireframe-to-SwiftUI design decisions.
 
 ---
 
-**Summary:** Four practical works progressively built a small iOS application with local domain logic, modular architecture, navigation and animations, and a real remote meal search. The local and online features remain independent, and HTTP operations are separated from the SwiftUI presentation layer.
+**Summary:** Four practical works progressively built a small iOS application with local domain logic, modular architecture, navigation and animations, and a real remote meal search. The UI stage turned it into a complete recipe app: full online recipes, cooking from selected fridge ingredients, favorites and cooking history, in a redesigned interface. HTTP operations remain separated from the SwiftUI presentation layer.
