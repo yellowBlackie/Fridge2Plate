@@ -4,6 +4,7 @@ import Combine
 enum AppRoute: Hashable {
     case recipes
     case recipeDetails(String)
+    case onlineRecipes
 }
 
 enum AppSheet: String, Identifiable {
@@ -25,6 +26,10 @@ final class AppRouter: ObservableObject {
 
     func showRecipeDetails(_ recipe: Recipe) {
         path.append(.recipeDetails(recipe.name))
+    }
+
+    func showOnlineRecipes() {
+        path.append(.onlineRecipes)
     }
 
     func showAddIngredient() {

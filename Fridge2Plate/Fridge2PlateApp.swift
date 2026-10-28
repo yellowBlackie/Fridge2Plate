@@ -4,6 +4,7 @@ import SwiftUI
 struct Fridge2PlateApp: App {
 
     private let viewModel: FridgeViewModel
+    private let onlineService: any OnlineRecipeServiceProtocol
 
     init() {
         let eggs = Ingredient(
@@ -68,11 +69,18 @@ struct Fridge2PlateApp: App {
         self.viewModel = FridgeViewModel(
             recipeService: recipeService
         )
+
+        self.onlineService = TheMealDBService(
+            client: URLSessionHTTPClient()
+        )
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView(viewModel: viewModel)
+            ContentView(
+                viewModel: viewModel,
+                onlineService: onlineService
+            )
         }
     }
 }
