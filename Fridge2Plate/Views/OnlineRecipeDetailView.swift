@@ -4,6 +4,10 @@ struct OnlineRecipeDetailView: View {
 
     let meal: RemoteMeal
 
+    @EnvironmentObject private var library: MealLibrary
+
+    @State private var justCooked = false
+
     private var steps: [String] {
         (meal.strInstructions ?? "")
             .components(separatedBy: .newlines)
@@ -33,6 +37,64 @@ struct OnlineRecipeDetailView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Recipe")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                let isFavorite = library.isFavorite(meal)
+
+                Button {
+                    library.toggleFavorite(meal)
+                } label: {
+                    Image(systemName: isFavorite ? "heart.fill" : "heart")
+                        .foregroundStyle(isFavorite ? Color.pink : Color.primary)
+                        .contentTransition(.symbolEffect(.replace))
+                }
+                .sensoryFeedback(.selection, trigger: isFavorite)
+                .accessibilityLabel(isFavorite ? "Remove from favorites" : "Add to favorites")
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            cookButton
+        }
+    }
+
+    private var cookButton: some View {
+        Button {
+            library.markCooked(meal)
+
+            withAnimation(.snappy) {
+                justCooked = true
+            }
+        } label: {
+            Label(
+                justCooked ? "Added to Previous meals" : "Cook this",
+                systemImage: justCooked ? "checkmark" : "frying.pan.fill"
+            )
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .foregroundStyle(.white)
+            .background(
+                justCooked ? Color.green : Color.accentColor,
+                in: Capsule()
+            )
+            .contentTransition(.symbolEffect(.replace))
+        }
+        .disabled(justCooked)
+        .sensoryFeedback(.success, trigger: justCooked)
+        .padding(.horizontal)
+        .padding(.top, 20)
+        .padding(.bottom, 8)
+        .background(
+            LinearGradient(
+                stops: [
+                    .init(color: Color(.systemGroupedBackground).opacity(0), location: 0),
+                    .init(color: Color(.systemGroupedBackground), location: 0.35)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea(edges: .bottom)
+        )
     }
 
     private var header: some View {

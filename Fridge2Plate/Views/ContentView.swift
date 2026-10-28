@@ -5,15 +5,21 @@ struct ContentView: View {
 
     @StateObject private var viewModel: FridgeViewModel
     @StateObject private var router = AppRouter()
+    @StateObject private var library: MealLibrary
 
     private let onlineService: any OnlineRecipeServiceProtocol
 
     init(
         viewModel: FridgeViewModel,
-        onlineService: any OnlineRecipeServiceProtocol
+        onlineService: any OnlineRecipeServiceProtocol,
+        library: MealLibrary
     ) {
         _viewModel = StateObject(
             wrappedValue: viewModel
+        )
+
+        _library = StateObject(
+            wrappedValue: library
         )
 
         self.onlineService = onlineService
@@ -22,18 +28,7 @@ struct ContentView: View {
     var body: some View {
         NavigationStack(path: $router.path) {
 
-            FridgeHomeView(
-                viewModel: viewModel,
-                onShowRecipes: {
-                    router.showRecipes()
-                },
-                onAddIngredient: {
-                    router.showAddIngredient()
-                },
-                onOnlineRecipes: {
-                    router.showOnlineRecipes()
-                }
-            )
+            MainTabView(viewModel: viewModel)
             .navigationDestination(for: AppRoute.self) { route in
                 switch route {
 
@@ -57,13 +52,24 @@ struct ContentView: View {
                         )
                     }
 
-                case .onlineRecipes:
+                case .onlineRecipes(let query):
                     OnlineRecipesView(
-                        liveService: onlineService
+                        liveService: onlineService,
+                        initialQuery: query
                     )
 
                 case .onlineRecipeDetails(let meal):
                     OnlineRecipeDetailView(meal: meal)
+
+                case .ingredientRecipes(let ingredients):
+                    IngredientRecipesView(
+                        ingredients: ingredients,
+                        service: onlineService,
+                        fridgeViewModel: viewModel
+                    )
+
+                case .previousMeals:
+                    PreviousMealsView()
                 }
             }
             .sheet(item: $router.activeSheet) { _ in
@@ -79,5 +85,7 @@ struct ContentView: View {
                 }
             }
         }
+        .environmentObject(router)
+        .environmentObject(library)
     }
 }

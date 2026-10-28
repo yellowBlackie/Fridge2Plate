@@ -6,6 +6,7 @@ final class FridgeViewModel: ObservableObject {
 
     @Published var availableIngredients: [String]
     @Published var availableRecipes: [Recipe] = []
+    @Published private(set) var selectedIngredients: Set<String> = []
 
     private let recipeService: RecipeServiceProtocol
 
@@ -65,11 +66,41 @@ final class FridgeViewModel: ObservableObject {
             return false
         }
 
-        availableIngredients.remove(at: index)
+        let removed = availableIngredients.remove(at: index)
+        selectedIngredients.remove(removed)
 
         findAvailableRecipes()
 
         return true
     }
 
+    func isSelected(_ ingredient: String) -> Bool {
+        selectedIngredients.contains(ingredient)
+    }
+
+    func toggleSelection(_ ingredient: String) {
+        if selectedIngredients.contains(ingredient) {
+            selectedIngredients.remove(ingredient)
+        } else {
+            selectedIngredients.insert(ingredient)
+        }
+    }
+
+    func selectAll() {
+        selectedIngredients = Set(availableIngredients)
+    }
+
+    func clearSelection() {
+        selectedIngredients = []
+    }
+
+    /// Selected ingredients in the same order as in the fridge.
+    var orderedSelection: [String] {
+        availableIngredients.filter { selectedIngredients.contains($0) }
+    }
+
+    /// Local recipes that only use the given ingredients.
+    func localRecipes(using ingredients: [String]) -> [Recipe] {
+        recipeService.findRecipes(with: ingredients)
+    }
 }
